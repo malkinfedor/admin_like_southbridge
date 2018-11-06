@@ -1,0 +1,18 @@
+---
+
+- hosts: slurm
+  become: yes
+  roles:
+    - bootstrap-os
+    - users
+    - nginx
+
+  vars:
+    users:
+      - username: foo
+        name: Foo Barrington
+        groups: ['admin']
+        ssh_key:
+          - "ssh-rsa AAAAA.... foo@machine"
+    groups_to_create:
+      - name: admin

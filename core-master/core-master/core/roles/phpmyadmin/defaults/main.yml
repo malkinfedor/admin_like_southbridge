@@ -1,0 +1,1 @@
+httpd_phpmyadmin_version: "{{ (php_version <= 54) | ternary('44', '') }}"

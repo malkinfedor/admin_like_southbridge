@@ -1,0 +1,41 @@
+[##FQDN##]
+
+user = ##FQDN##
+group = ##FQDN##
+
+listen=/var/run/php-fpm_##FQDN##.sock
+listen.owner = ##FQDN## 
+listen.group = nginx
+listen.mode = 0660
+
+pm = dynamic
+pm.max_children = 32
+pm.start_servers = 8
+pm.min_spare_servers = 8
+pm.max_spare_servers = 16
+pm.max_requests = 500
+
+pm.status_path = /phpfpm_##FQDN##
+ping.path = /fpm-ping_##FQDN##
+
+catch_workers_output = yes
+request_slowlog_timeout = 20s
+slowlog = ##WWW_PATH##/##FQDN##/logs/php-fpm-slow.log
+;access.log = ##WWW_PATH##/##FQDN##/logs/php-fpm-acc.log
+;access.format = "%t \"%m %r%Q%q\" %s %{mili}dms %{kilo}Mkb %C%%"
+
+;php_admin_value[sendmail_path] = /usr/sbin/sendmail -t -i -f www@my.domain.com
+
+php_admin_value[error_reporting] = E_ALL & ~E_NOTICE & ~E_DEPRECATED
+php_admin_value[error_log] = ##WWW_PATH##/##FQDN##/logs/php-fpm-err.log
+php_admin_flag[log_errors] = on
+php_admin_flag[display_errors] = off
+
+php_admin_value[open_basedir] = ##WWW_PATH##/##FQDN##:/usr/share/php
+php_admin_value[upload_tmp_dir] = ##WWW_PATH##/##FQDN##/tmp
+php_admin_value[session.save_path] = ##WWW_PATH##/##FQDN##/tmp
+php_admin_value[upload_max_filesize] = 256M
+php_admin_value[post_max_size] = 256M
+php_admin_value[memory_limit] = 256M
+php_admin_flag[short_open_tag] = on
+php_admin_value[date.timezone] = Europe/Moscow

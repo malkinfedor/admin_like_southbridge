@@ -1,0 +1,4 @@
+# FILE CREATED BY ANSIBLE.
+# Please remove this file after ds-init procedure
+Defaults:{{ansible_user}} !requiretty
+{{ansible_user}} ALL=(ALL) NOPASSWD: ALL

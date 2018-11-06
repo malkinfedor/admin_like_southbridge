@@ -1,0 +1,7 @@
+# on sbox add key to login from server
+
+echo 'command="rdiff-backup --server --restrict vzbackups",no-port-forwarding,no-X11-forwarding,no-pty ssh-rsa AAA....' >> ~/.ssh/authorized_keys
+mkdir -p ~/vzbackups
+
+rdiff-backup /srv/www red01@sbox.slurm.io::vzbackups
+

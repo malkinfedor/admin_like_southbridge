@@ -1,0 +1,12 @@
+---
+
+- name: Remove alias from root .bashrc
+  lineinfile:
+    path: /root/.bashrc
+    regexp: "{{ item }}"
+    state: absent
+  with_items:
+    - '^\s*export LS_OPTIONS="--human --color=always"'
+    - '^\s*alias ls='
+    - '^\s*alias ll='
+    - '^\s*alias l='

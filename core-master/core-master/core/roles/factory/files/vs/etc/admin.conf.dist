@@ -1,0 +1,48 @@
+NAME=`hostname | awk -F '.' '{print $2}'`
+HOSTNAME=`hostname | awk -F '.' '{print $2"."$3}'`
+LC_ALL="ru_RU.UTF-8"
+
+# named settings
+NS1_FQDN="ns1.$HOSTNAME"
+NS2_FQDN="ns2.$HOSTNAME"
+HOSTMASTER_EMAIL="hostmaster.$HOSTNAME"
+SMTP_FQDN="$HOSTNAME"
+NAMED_PATH="/var/named"
+NAMED_CONF_RELATIVE_PATH="conf"
+NAMED_ZONE_RELATIVE_PATH="masters"
+NAMED_ALLOW_TRANSFER_ACLS="southbridge;"
+
+# postgresql settings
+if [ -f "/etc/init.d/pgbouncer" ]; then
+    POSTGRESQL_PORT="5454"
+else
+    POSTGRESQL_PORT="5432"
+fi
+
+# ftp settings
+FTP_UID="48"
+FTP_GID="48"
+FTP_QUOTA="0"
+
+OS=`uname`
+if [ "$OS" = "FreeBSD" ]; then
+    # FreeBSD defaults
+    WWW_PATH="/var/www"
+    WWW_USERNAME="www"
+    AWSTATS_CONF_PATH="/usr/local/etc/awstats"
+    AWSTATS_DATA_PATH="/var/awstats"
+    APACHE_CONF_PATH="/usr/local/etc/apache22"
+    NGINX_CONF_PATH="/usr/local/etc/nginx"
+    PUREFTPD_CONF="/usr/local/etc/pure-ftpd.conf"
+    FPM_CONF_PATH="/usr/local/etc/php-fpm.d"
+else
+    # CentOS defaults
+    WWW_PATH="/srv/www"
+    WWW_USERNAME="apache"
+    AWSTATS_CONF_PATH="/etc/awstats"
+    AWSTATS_DATA_PATH="/var/lib/awstats"
+    APACHE_CONF_PATH="/etc/httpd"
+    NGINX_CONF_PATH="/etc/nginx"
+    PUREFTPD_CONF="/etc/pure-ftpd/pure-ftpd.conf"
+    FPM_CONF_PATH="/etc/php-fpm.d"
+fi

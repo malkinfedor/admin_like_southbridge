@@ -1,0 +1,1 @@
+* * * * * root for i in {0..5}; do /srv/southbridge/bin/apache_dos_protect.sh >/dev/null 2>&1 && sleep 10; done;

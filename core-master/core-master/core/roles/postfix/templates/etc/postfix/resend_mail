@@ -1,0 +1,23 @@
+#!/bin/sh
+{% if (postfix_dkim_enabled == True) %}
+cd /var/spool/postfix/hold
+FIRST=1
+HN=`hostname`
+for i in `/bin/ls -1`; do
+  if [ "$FIRST" = "1" ]; then
+    F=`mktemp`
+    echo "Restart service" >> $F 2>&1
+    date >> $F 2>&1
+    echo "" >> $F 2>&1
+    /sbin/service opendkim restart >> $F 2>&1
+    /sbin/service postfix restart >> $F 2>&1
+    FIRST=0
+  fi
+  echo $i >> $F
+  /usr/sbin/postsuper -r $i
+done
+if [ "$FIRST" = "0" ]; then
+ cat $F | /usr/bin/dos2unix | /bin/mail -s "$HN ALERT Opendkim resend mail" root
+ rm -f $F
+fi
+{% endif %}

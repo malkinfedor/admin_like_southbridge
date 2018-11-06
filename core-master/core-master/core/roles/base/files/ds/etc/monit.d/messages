@@ -1,0 +1,11 @@
+check file messages with path /var/log/messages
+    if match 'OOM killed process' then alert
+    if match 'temperature above threshold' then alert
+    if match 'table full, dropping packet' then alert
+    if match 'time wait bucket table overflow' then alert
+    if match 'Directory index full' then alert
+    if match 'OOM killed process' for 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor messages && /bin/sleep 3600 && /usr/bin/monit monitor messages'"
+    if match 'temperature above threshold' for 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor messages && /bin/sleep 3600 && /usr/bin/monit monitor messages'"
+    if match 'table full, dropping packet' for 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor messages && /bin/sleep 3600 && /usr/bin/monit monitor messages'"
+    if match 'blocked for more than 120 seconds' for 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor messages && /bin/sleep 3600 && /usr/bin/monit monitor messages'"
+    if match 'Directory index full' for 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor messages && /bin/sleep 3600 && /usr/bin/monit monitor messages'"

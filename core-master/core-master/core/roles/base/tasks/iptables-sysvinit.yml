@@ -1,0 +1,30 @@
+---
+- name: "{{ base_iptables_service }} service"
+  template:
+    src: "iptables/{{ base_iptables_script }}.j2"
+    dest: "/etc/init.d/{{ base_iptables_service }}"
+    mode: 0755
+  register: base_iptables_script_result
+  tags: [ iptables ]
+
+- name: "{{ base_iptables_service }} service {{ base_iptables_enable|ternary('enabled','disabled') }} (sysVinit)"
+  service:
+    name: "{{ base_iptables_service }}"
+    state: "{{ base_iptables_enable|ternary('started','stopped') }}"
+    enabled: "{{ base_iptables_enable|ternary('yes','no') }}"
+  tags: [ iptables ]
+
+- name: "{{ base_iptables_service }} service reloaded (sysVinit)"
+  service:
+    name: "{{ base_iptables_service }}"
+    state: reloaded
+  when: base_whitelist.changed
+  tags: [ iptables ]
+
+- name: "{{ base_iptables_service }} service restarted (sysVinit)"
+  service:
+    name: "{{ base_iptables_service }}"
+    state: restarted
+  when: base_iptables_script_result.changed
+  tags: [ iptables ]
+...

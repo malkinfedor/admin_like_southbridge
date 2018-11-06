@@ -1,0 +1,33 @@
+#- name: iptables config save
+#  blockinfile:
+#    path: /etc/sysconfig/iptables
+#    marker: '# {mark} NAT'
+#    insertbefore: BOF
+#    block: |
+#      *nat
+#      :PREROUTING ACCEPT [0:0]
+#      :POSTROUTING ACCEPT [0:0]
+#      :OUTPUT ACCEPT [0:0]
+#      -A POSTROUTING -s {{nat_network}} -o {{ (nat_interface == "") | ternary(ansible_default_ipv4["interface"], nat_interface) }} -j SNAT --to-source {{ (nat_ip_address == "") | ternary(ansible_default_ipv4["address"], nat_ip_address) }}
+#      COMMIT
+
+- name: enable NAT in openvz kernel
+  lineinfile:
+    path: /etc/modprobe.d/openvz.conf
+    regexp: options nf_conntrack ip_conntrack_disable_ve0=
+    line: options nf_conntrack ip_conntrack_disable_ve0=0
+    state: present
+    create: yes
+  register: enable_nat_openvz_result
+  when: virtualization_type == 'vz' or virtualization_type == 'vz7'
+
+- name: set iptables NAT rule
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    source: "{{ nat_network }}"
+    out_interface: "{{ nat_interface|default(ansible_default_ipv4['interface'],true) }}"
+    jump: SNAT
+    to_source: "{{ nat_ip_address|default(ansible_default_ipv4['address'],true) }}"
+    state: present
+  when: (enable_nat_openvz_result is undefined) or (enable_nat_openvz_result is defined and enable_nat_openvz_result.changed == False)

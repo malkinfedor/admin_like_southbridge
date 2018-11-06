@@ -1,0 +1,8 @@
+check file error_log with path /var/log/httpd/error_log
+    if match 'signal Segmentation fault' then alert
+    if match 'exit signal Aborted' then exec '/srv/southbridge/bin/httpd-restart.sh'
+    if match 'server reached MaxClients setting' then exec /srv/southbridge/bin/highload-report.sh force-restart
+    if match 'signal Segmentation fault' 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor error_log && /bin/sleep 3600 && /usr/bin/monit monitor error_log'"
+    if match 'exit signal Aborted' 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor error_log && /bin/sleep 3600 && /usr/bin/monit monitor error_log'"
+    if match 'server reached MaxClients setting' 2 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor error_log && /bin/sleep 3600 && /usr/bin/monit monitor error_log'"
+ noalert send@send.smsc.ru

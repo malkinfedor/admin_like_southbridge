@@ -1,0 +1,9 @@
+/srv/www/*/logs/cron/*.log {
+    size 50M
+    weekly
+    maxage 180
+    compress
+    copytruncate
+    missingok
+    notifempty
+}

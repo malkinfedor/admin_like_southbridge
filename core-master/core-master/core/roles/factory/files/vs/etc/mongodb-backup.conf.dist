@@ -1,0 +1,81 @@
+# Host name (or IP address) of MySQL server e.g localhost
+DBHOST=localhost
+
+#daemon port
+DBPORT="27017"
+
+# Username to access the mongo server e.g. dbuser
+# Unnecessary if authentication is off
+# DBUSERNAME=""
+
+# Username to access the mongo server e.g. password
+# Unnecessary if authentication is off
+# DBPASSWORD=""
+
+# Backup directory location e.g /backups
+BACKUPDIR="/var/backups/mongodb"
+
+# Nice running level
+NICE=20
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="root"
+
+# ============================================================
+# === ADVANCED OPTIONS ( Read the doc's below for details )===
+#=============================================================
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY=6
+
+# Choose Compression type. (gzip or bzip2)
+COMP="gzip"
+
+# Choose if the uncompressed folder should be deleted after compression has completed
+CLEANUP="yes"
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST="yes"
+
+# Make Hardlink not a copy
+LATESTLINK="yes"
+
+# Use oplog for point-in-time snapshotting.
+OPLOG="no"
+
+# Enable and use journaling.
+JOURNAL="no"
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY=0
+
+# How many days keep backup
+BACKUP_DAYS=3
+
+# How many days keep backup
+BACKUP_MONTH=4
+
+# Choose other Server if is Replica-Set Master
+#REPLICAONSLAVE="no"
+
+# Command to run before backups (uncomment to use)
+# PREBACKUP=""
+
+# Command run after backups (uncomment to use)
+# POSTBACKUP=""
+
+#параметры для хот бэкапа
+#DO_HOT_BACKUP=yes
+#в случае изменения этой переменной необходимо внести соответствующие изменения в файл etc/mongo-backup.js !!!
+#HOTBACKUPDIR="/var/lib/mongodb.backup"

@@ -1,0 +1,45 @@
+---
+users:
+  - { name: bond,
+      password: "",
+      comment: "Sergey Bondarev" }
+  - { name: sf,
+      password: "",
+      comment: "Sergey Fomin" }
+  - { name: avpro,
+      password: "",
+      comment: "Andrey Pronin" }
+  - { name: m.ibraev,
+      password: "",
+      comment: "Marsel Ibraev" }
+  - { name: v.afonin,
+      password: "",
+      comment: "Valeriy Afonin" }
+  - { name: n.mesropyan,
+      password: "",
+      comment: "Nikolay Mesropyan" }
+  - { name: v.isakanov,
+      password: "",
+      comment: "Vadim Isakanov" }
+  - { name: e.tereshkov,
+      password: "",
+      comment: "Evgeny Tereshkov" }
+  - { name: j.balbaev,
+      password: "",
+      comment: "Jan Balbaev" }
+  - { name: p.selivanov,
+      password: "",
+      comment: "Pavel Selivanov" }
+  - { name: s.yudin,
+      password: "",
+      comment: "Sergey Yudin" }
+  - { name: red00,
+      password: "$6$wmc79ML./i7BMgsj$7mBevxeeL9XDcmD1h2OARPg1s5h2Nf2E9TirTQpemqFwrmIlLeubAC/oG5HuXEhFcJ5HqrsWefxVu9iPJvXn90",
+      comment: "red00" }
+
+deleted_users:
+  - vg
+
+admin_iptables_enable: true
+admin_keys_exclusive: true
+...

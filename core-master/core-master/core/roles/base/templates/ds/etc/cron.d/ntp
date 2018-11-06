@@ -1,0 +1,4 @@
+# THIS FILE IS ANSIBLE MANAGED
+
+0 * * * * root /usr/sbin/ntpdate {{ base_ntp_pool }} >/dev/null
+2 0 * * * root /sbin/hwclock --systohc

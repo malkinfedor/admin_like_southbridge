@@ -1,0 +1,26 @@
+---
+- import_tasks: bootstrap-Debian.yml
+  when: ansible_os_family | lower == "debian"
+  tags: ["debian", "ubuntu"]
+
+- import_tasks: bootstrap-RedHat.yml
+  when: ansible_os_family | lower == "redhat"
+  tags: ["redhat", "centos"]
+
+# Remove requiretty to make ssh pipelining work
+- name: remove require tty
+  lineinfile: regexp='^\w+\s+requiretty' dest=/etc/sudoers state=absent
+  tags: ["ubuntu", "debian", "centos", "redhat"]
+
+- name: allow admin group sudo without password
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%admin ALL='
+    line: '%admin ALL=(ALL) NOPASSWD: ALL'
+    validate: '/usr/sbin/visudo -cf %s'
+  tags: ["ubuntu", "debian", "centos", "redhat"]
+
+- name: assign inventory name to unconfigured hostnames
+  hostname: name="{{inventory_hostname}}"
+  tags: ["ubuntu", "debian", "centos", "redhat"]

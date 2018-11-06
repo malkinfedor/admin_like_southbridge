@@ -1,0 +1,111 @@
+---
+- name: install postfix
+  become: true
+  yum:
+    name: postfix
+    state: present
+
+- name: install opendkim
+  become: true
+  yum:
+    name: opendkim
+    state: present
+  when: postfix_dkim_enabled == True
+
+- name: mkdir /etc/monit.d
+  file:
+    path: /etc/monit.d
+    state: directory
+
+- name: copy configs postfix
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - "{{ postfix_list_files }}"
+  notify: restart postfix
+
+- name: insert user into sasl_password
+  lineinfile:
+    path: /etc/postfix/sasl_passwd
+    create: yes
+    line: "[{{postfix_relayhost}}]:{{postfix_relayhost_port}} {{postfix_send_user}}:{{postfix_send_password}}"
+  when: postfix_relayhost != ''
+
+- name: install postfix
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - cyrus-sasl-lib
+    - cyrus-sasl-plain
+  when: postfix_relayhost != ''
+  notify: restart postfix
+
+- include: postmap.yml postfix_db_file={{item}}
+  with_items:
+    - /etc/postfix/sasl_passwd
+  when: postfix_relayhost != ''
+
+- name: copy configs opendkim
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - "{{ postfix_opendkim_list_files }}"
+  when: postfix_dkim_enabled == True
+  notify: reload opendkim
+
+# test .db
+- include: make_aliases_db.yml postfix_alias_file={{item}}
+  with_items:
+    - /etc/aliases
+    - /etc/aliases_local
+
+- name: launch and enable postfix service
+  become: true
+  service:
+    name: postfix
+    state: started
+    enabled: yes
+
+- name: launch and enable opendkim service
+  become: true
+  service:
+    name: opendkim
+    state: started
+    enabled: yes
+  when: postfix_dkim_enabled == True
+
+- name: stop and disable opendkim service
+  become: true
+  service:
+    name: opendkim
+    state: stopped
+    enabled: no
+  when: postfix_dkim_enabled == False
+  register: disabled_service_result
+  failed_when: >
+    disabled_service_result is failed
+    and ('Could not find the requested service' not in disabled_service_result.msg
+    and ' found ' not in disabled_service_result.msg
+    and 'failed determining service state' not in disabled_service_result.msg )
+
+- name: remove configs opendkim
+  become: true
+  file:
+    path: "{{ item.dest }}"
+    state: absent
+  with_items:
+    - "{{ postfix_opendkim_list_files }}"
+  when: postfix_dkim_enabled == False
+...

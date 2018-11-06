@@ -1,0 +1,13 @@
+### THIS FILE IS ANSIBLE MANAGED ###
+check process NTPD
+{% if ansible_distribution_major_version|int >= 7 %}
+    matching "ntpd"
+    start program = "/bin/systemctl start ntpd.service"
+    stop  program = "/bin/systemctl stop  ntpd.service"
+{% else %}
+    with pidfile /var/run/ntpd.pid
+    start program = "/sbin/service ntpd start"
+    stop  program = "/sbin/service ntpd stop"
+{% endif %}
+    if failed host 127.0.0.1 port 123 type udp then alert
+### EOF ###

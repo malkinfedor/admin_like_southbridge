@@ -1,0 +1,21 @@
+#!/bin/sh
+{% if (postfix_dkim_enabled == True) %}
+DOMAIN=$1
+if [ -z "$1" ];then echo "Use: $0 domain.ru"; exit 1; fi
+cd /etc/postfix
+HN=`hostname`
+if [ -f /etc/opendkim/keys/$DOMAIN.private ]; then
+  echo "Domain $DOMAIN alredy configured"
+  exit
+fi
+opendkim-genkey -D . -d $DOMAIN -s default
+mv default.private /etc/opendkim/keys/$DOMAIN.private
+mv default.txt /etc/opendkim/keys/$DOMAIN.txt
+echo "default._domainkey.$DOMAIN $DOMAIN:default:/etc/opendkim/keys/$DOMAIN.private" >> /etc/opendkim/KeyTable
+echo "$DOMAIN default._domainkey.$DOMAIN" >> /etc/opendkim/SigningTable
+chown -R opendkim /etc/opendkim
+chgrp -R opendkim /etc/opendkim
+chmod -R g+r /etc/opendkim
+echo "$DOMAIN. IN TXT \"v=spf1 a:$HN\" mx ~all" >> /etc/opendkim/keys/$DOMAIN.txt
+service opendkim restart
+{% endif %}

@@ -1,0 +1,14 @@
+- name: remove old repo
+  file:
+    path: /etc/yum.repos.d/elrepo.repo
+    state: absent
+
+- name: install repository
+  yum_repository:
+    name: elrepo-kernel
+    description: ELRepo.org Community Enterprise Linux Kernel Repository - el7
+    baseurl: http://elrepo.org/linux/kernel/el7/$basearch/
+    mirrorlist: http://mirrors.elrepo.org/mirrors-elrepo-kernel.el7
+    gpgcheck: yes
+    gpgkey: https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+    enabled: yes

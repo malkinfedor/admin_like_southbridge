@@ -1,0 +1,83 @@
+<domain type='kvm'>
+  <name>{{ item[0].name }}</name>
+  <memory unit='MiB'>{{ item[0].memory_mb|d('1024') }}</memory>
+  <currentMemory unit='MiB'>{{ item[0].memory_mb|d('1024') }}</currentMemory>
+  <vcpu placement='static'>{{ item[0].cpu_count|d('1') }}</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  {% if item[0].cpu_custom|d() %}
+  <cpu mode='custom' match='exact'>
+    <model fallback='allow'>{{ kvm_host_cpu_model.matches[0].model }}</model>
+  </cpu>
+  {% else %}
+  <cpu mode='host-model'>
+    <model fallback='allow'/>
+  </cpu>
+  {% endif %}
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='{% if item[2].matches[0].pool.type == "logical" %}block{% elif item[2].matches[0].pool.type == "dir" %}file{% endif %}' device='disk'>
+      <driver name='qemu' type='{{ item[0].disk_format|d('raw') }}' cache='none' io='native'/>
+      <source {% if item[2].matches[0].pool.type == "logical" %}dev{% elif item[2].matches[0].pool.type == "dir" %}file{% endif %}='{{ item[1].matches[0].path }}/vm_{{ item[0].name }}'/>
+      <target dev='vda' bus='{{ item[0].disk_bus|default('virtio') }}'/>
+    </disk>
+    <controller type='usb' index='0' model='ich9-ehci1'>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci1'>
+      <master startport='0'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci2'>
+      <master startport='2'/>
+    </controller>
+    <controller type='usb' index='0' model='ich9-uhci3'>
+      <master startport='4'/>
+    </controller>
+    <controller type='pci' index='0' model='pci-root'/>
+    <controller type='virtio-serial' index='0'>
+    </controller>
+    <interface type='bridge'>
+      <source bridge='{{ item[0].nic_bridge }}'/>
+      <model type='{{ item[0].nic_model|default('virtio') }}'/>
+    </interface>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <channel type='unix'>
+      <target type='virtio' name='org.qemu.guest_agent.0'/>
+    </channel>
+    <input type='tablet' bus='usb'>
+    </input>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes'>
+      <listen type='address'/>
+    </graphics>
+    <video>
+      <model type='cirrus' vram='16384' heads='1' primary='yes'/>
+    </video>
+    <memballoon model='virtio'>
+    </memballoon>
+  </devices>
+</domain>
+

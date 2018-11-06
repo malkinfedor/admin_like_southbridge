@@ -1,0 +1,17 @@
+#!/bin/sh
+
+F=$1
+if [ -z $SUDO_USER ]; then
+  SUDO_USER=$USER
+fi
+
+if [ -z $SUDO_USER ]; then
+  echo "no USER defined"
+  exit
+fi
+      
+if [ -f "$F" -o -d "$F" ]; then
+   scp -r "$F" "$SUDO_USER@vs09.southbridge.ru:/home/$SUDO_USER/data/$F"
+   echo "xget $F"
+   shift
+fi

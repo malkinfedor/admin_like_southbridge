@@ -1,0 +1,7 @@
+[student]
+name=Red slurm student repository
+gpgcheck=1
+enabled=1
+priority=10
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-student
+baseurl=http://r00.slurm.io/$basearch/

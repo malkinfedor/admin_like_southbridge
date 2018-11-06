@@ -1,0 +1,209 @@
+---
+- name: "file: create directories"
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - /srv/southbridge/bin
+    - /srv/southbridge/etc
+    - /srv/southbridge/check
+    - /srv/southbridge/scripts
+    - /var/lib/flags
+    - /var/monit
+    - /etc/monit.d
+
+- name: "file: create secure directories"
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0700
+  with_items:
+    - /root/.ssh
+    - /root/.mc
+
+- name: copy xget
+  copy: src=usr dest=/ mode='0755'
+
+- name: Copy monit configs
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/monitrc',
+        dest: '/etc/monitrc',
+        mode: '0600' }
+    - { src: 'etc/monit.d/daemon',
+        dest: '/etc/monit.d/daemon',
+        mode: '0444' }
+    - { src: 'etc/monit.d/mmonit',
+        dest: '/etc/monit.d/mmonit',
+        mode: '0444' }
+    - { src: 'etc/monit.d/logging',
+        dest: '/etc/monit.d/logging',
+        mode: '0444' }
+  notify: restart monit
+
+- name: Template monit configs
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/monit.d/alerts',
+        dest: '/etc/monit.d/alerts',
+        mode: '0600' }
+  notify: restart monit
+
+- name: Copy sysctl config
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/init.d/sysctl',
+        dest: '/etc/init.d/sysctl',
+        mode: '0755' }
+  notify:
+    - reload systemd
+    - restart sysctl
+
+- name: Copy common configs
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/selinux/config',
+        dest: '/etc/selinux/config',
+        mode: '0444' }
+    - { src: 'etc/logrotate.d/monit',
+        dest: '/etc/logrotate.d/monit',
+        mode: '0444' }
+    - { src: 'etc/profile.d/southbridge.sh',
+        dest: '/etc/profile.d/southbridge.sh',
+        mode: '0444' }
+    - { src: 'etc/init.d/tc-shaper',
+        dest: '/etc/init.d/tc-shaper',
+        mode: '0755' }
+    - { src: 'etc/security/limits.conf',
+        dest: '/etc/security/limits.conf',
+        mode: '0444' }
+    - { src: 'root/.ssh/config',
+        dest: '/root/.ssh/config',
+        mode: '0640' }
+    - { src: 'root/.mc/bashrc',
+        dest: '/root/.mc/bashrc',
+        mode: '0640' }
+
+- name: Template configs common
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/hosts.allow.j2',
+        dest: '/etc/hosts.allow',
+        mode: '0444' }
+
+- name: Copy EL6 configs
+  copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+    owner: root
+    group: root
+    mode: '{{ item.mode }}'
+  with_items:
+    - { src: 'rhel6/etc/monit.d/rsyslogd',
+        dest: '/etc/monit.d/rsyslogd',
+        mode: '0444' }
+    - { src: 'rhel6/etc/monit.d/crond',
+        dest: '/etc/monit.d/crond',
+        mode: '0444' }
+    - { src: 'rhel6/etc/sysconfig/i18n',
+        dest: '/etc/sysconfig/i18n',
+        mode: '0444' }
+    - { src: 'rhel6/etc/sysconfig/clock',
+        dest: '/etc/sysconfig/clock',
+        mode: '0444' }
+  notify: restart monit
+  when: ansible_distribution_major_version|int <= 6
+
+- name: Copy EL7 monit configs
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'rhel7/etc/monit.d/rsyslogd',
+        dest: '/etc/monit.d/rsyslogd',
+        mode: '0444' }
+    - { src: 'rhel7/etc/monit.d/crond',
+        dest: '/etc/monit.d/crond',
+        mode: '0444' }
+  notify: restart monit
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Copy journald.conf
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'rhel7/etc/systemd/journald.conf',
+        dest: '/etc/systemd/journald.conf',
+        mode: '0444' }
+  notify: restart journald
+  when: ansible_distribution_major_version|int >= 7
+  tags: [ journald ]
+
+- name: copy configs rhel7 system.conf
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'rhel7/etc/systemd/system.conf',
+        dest: '/etc/systemd/system.conf',
+        mode: '0444' }
+  notify: set-log-level systemd
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Copy EL7 rsyslog config
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'rhel7/etc/rsyslog.conf',
+        dest: '/etc/rsyslog.conf',
+        mode: '0444' }
+  notify: restart rsyslog
+  when: ansible_distribution_major_version|int >= 7
+
+- name: "lineinfile: remove ipv6 line from hosts"
+  lineinfile:
+    path: "{{ base_hostsfile }}"
+    regexp: "^::1.*"
+    state: absent
+  when: not base_ipv6
+...

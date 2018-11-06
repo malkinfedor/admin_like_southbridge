@@ -1,0 +1,39 @@
+- name: check public key exists
+  user:
+    generate_ssh_key: yes
+    user: root
+  become: yes
+
+- name: get public key
+  command: cat /root/.ssh/id_rsa.pub
+  register: root_public_key
+  changed_when: false
+
+- name: set username to connect backup server
+  set_fact:
+    backup_server_username: "{{ inventory_hostname.split('.')[-2] | default(inventory_hostname) }}"
+  when:
+    - backup_server_username is undefined
+
+- include: copy_ds_backup_script.yml
+  when:
+    - server_type == 'vds' or virtualization_type == 'docker'
+
+- include: copy_vz_backup_script.yml
+  when:
+    - virtualization_type == 'vz' or virtualization_type == 'vz7'
+
+- name: add StrictHostKeyChecking no to ssh config
+  lineinfile:
+    path: /root/.ssh/config
+    state: present
+    create: yes
+    line: 'StrictHostKeyChecking no'
+
+- name: copy logrotate config
+  template:
+    src: "etc/logrotate.d/vzbackups"
+    dest: "/etc/logrotate.d/vzbackups"
+    owner: root
+    group: root
+    mode: '0644'

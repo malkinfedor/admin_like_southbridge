@@ -1,0 +1,41 @@
+- name: install pure-ftpd
+  become: true
+  yum:
+    name: pure-ftpd
+    state: present
+
+- name: copy configs
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/pure-ftpd/pure-ftpd.conf',
+        dest: '/etc/pure-ftpd/pure-ftpd.conf',
+        mode: '0644' }
+
+- name: copy configs monit.d
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/monit.d/pure-ftpd',
+        dest: '/etc/monit.d/pure-ftpd',
+        mode: '0644' }
+  notify:
+    - restart monit
+
+- name: launch and enable pure-ftpd service
+  become: true
+  service:
+    name: pure-ftpd
+    state: started
+    enabled: yes
+

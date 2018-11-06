@@ -1,0 +1,34 @@
+settings {
+  logfile = "/var/log/lsyncd/lsync.log",
+  statusFile = "/var/log/lsyncd/lsyncd-status.log",
+  statusInterval = 1,
+}
+sync {
+   default.rsyncssh,
+   delete = true,
+   host = "lsync@vs02.bitrix-example.com",
+   source = "/srv/www/bitrix-example.com/htdocs/",
+   targetdir = "/srv/www/bitrix-example.com/htdocs/",
+  exclude = {
+        "/bitrix/php_interface/dbconn.php",
+        "/bitrix/.settings.php",
+        "/bitrix/.settings_extra.php",
+        "/upload/tmp/",
+        "/bitrix/tmp/",
+        "/bitrix/managed_cache/",
+        "/bitrix/cache",
+        "/bitrix/stack_cache/",
+        "/bitrix/backup/",
+        "/.git/",
+        "/upload/1c_exchange/",
+   },
+   rsync = {
+     compress = true,
+     perms = true,
+     owner = true,
+     group = true,
+   }
+}
+
+
+

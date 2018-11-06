@@ -1,0 +1,73 @@
+---
+
+- name: Abort if system is not RedHat family
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: ( ansible_os_family != "RedHat" )
+
+- name: Abort if system is not RedHat family 6 or 7 distro
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: (( ansible_distribution_major_version != "6" ) and ( ansible_distribution_major_version != "7" ))
+
+- name: Install smartmontools
+  yum: name=smartmontools state=latest
+
+- include: detect.yml
+
+- name: test custom smartd.conf
+  set_fact:
+    smartd_conf_donotinstall: "donotinstall"
+  when: smartd_conf is defined
+
+- name: test custom smartd.conf
+  set_fact:
+    smartd_conf_donotinstall: ""
+  when: smartd_conf is not defined
+
+#- name: Deploying smartd.sh
+#  copy: src=smartd.sh dest=/tmp/smartd.sh mode=0755
+#  shell: /tmp/smartd.sh {{ raid_type }} {{ smartd_conf_donotinstall }}
+
+- name: smartd.sh
+  become: true
+  script: ./scripts/smartd.sh {{ raid_type }} {{ smartd_conf_donotinstall }}
+  register: smartdsh
+
+- debug: msg="{{ smartdsh.stdout.split('\n') }}"
+
+- name: set smartmontools config path
+  set_fact:
+    smartd_config_file: "/etc/smartd.conf"
+
+- name: set smartmontools config path centos6
+  set_fact:
+    smartd_config_file: "/etc/smartd.conf"
+  when: ansible_distribution_major_version == "6"
+
+- name: set smartmontools config path centos7
+  set_fact:
+    smartd_config_file: "/etc/smartmontools/smartd.conf"
+  when: ansible_distribution_major_version == "7"
+
+- block:
+  - name: backup smartd.conf
+    command: "mv {{smartd_config_file}} {{smartd_config_file}}.bak"
+    args:
+      creates: "{{smartd_config_file}}.bak"
+  - name: create smartd.conf
+    copy:
+      content: "{{ smartd_conf }}"
+      dest: "{{smartd_config_file}}"
+  when: smartd_conf is defined
+
+- name: Restart smartd
+  service:
+    name: smartd
+    enabled: yes
+    state: restarted
+  when: smartdsh.rc == 0 and smartdsh.stdout == "changed"
+
+- debug: msg="{{ smartdsh.stdout.split('\n') }}"
+  when: smartdsh.rc > 0
+
+- fail: msg="Smartd install failed."
+  when: smartdsh.rc > 0 and ignore_smartd_install_error == False

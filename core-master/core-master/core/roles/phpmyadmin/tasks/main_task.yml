@@ -1,0 +1,50 @@
+- name: install phpMyAdmin
+  yum:
+    name: "{{ item }}"
+    enablerepo: southbridge-stable
+    state: present
+  with_items:
+    - "{{ 'phpmyadmin' ~ httpd_phpmyadmin_version }}"
+    - php-mbstring
+
+- name: chmod phpMyAdmin
+  file:
+    path: /usr/share/phpMyAdmin
+    state: directory
+    mode: "o+rX,g+rX"
+
+- name: create subdirectories
+  file:
+    path: /etc/phpMyAdmin
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: copy configs
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/phpMyAdmin/config.inc.php',
+        dest: '/etc/phpMyAdmin/config.inc.php',
+        mode: '0644' }
+    - { src: 'etc/httpd/conf.d/phpMyAdmin.conf',
+        dest: '/etc/httpd/conf.d/phpMyAdmin.conf',
+        mode: '0644' }
+
+- name: copy blowfish key
+  template:
+    force: no
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/phpMyAdmin/blowfish_secret.php',
+        dest: '/etc/phpMyAdmin/blowfish_secret.php',
+        mode: '0644' }

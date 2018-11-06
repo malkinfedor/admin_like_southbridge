@@ -1,0 +1,16 @@
+- name: Generate RSA key for local user
+  become: false
+  delegate_to: 127.0.0.1
+  connection: local
+  run_once: true
+  command: ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ""
+  args:
+    creates: ~/.ssh/id_rsa
+
+- name: Set SSH keys for current user to enable synchronixe
+  authorized_key:
+    user: "{{ ansible_ssh_user }}"
+    key: "{{lookup('file','~/.ssh/id_rsa.pub')}}"
+    state: present
+    exclusive: false
+  tags: [ users, keys ]

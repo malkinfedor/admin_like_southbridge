@@ -1,0 +1,18 @@
+{% if (ansible_distribution_major_version == '7') %}
+check process nginx with pidfile /var/run/nginx.pid
+    start program = "/bin/systemctl start nginx"
+    stop program = "/bin/systemctl stop nginx"
+    if failed url http://localhost/nginx-status
+	for 3 cycles
+	then alert
+    if 3 restarts within 6 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor nginx && /bin/sleep 3600 && /usr/bin/monit monitor nginx'"
+{% endif %}
+{% if (ansible_distribution_major_version < '7') %}
+check process nginx with pidfile /var/run/nginx.pid
+    start program = "/etc/init.d/nginx start"
+    stop program = "/etc/init.d/nginx stop"
+    if failed url http://localhost/nginx-status
+        for 3 cycles
+        then alert
+    if 3 restarts within 6 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor nginx && /bin/sleep 3600 && /usr/bin/monit monitor nginx'"
+{% endif %}

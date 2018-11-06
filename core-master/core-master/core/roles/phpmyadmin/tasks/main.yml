@@ -1,0 +1,4 @@
+
+- include: main_task.yml
+  when: "('phpmyadmin' in roles) or ('php' in roles) or ('httpd' in roles) or ('php-fpm' in roles)"
+

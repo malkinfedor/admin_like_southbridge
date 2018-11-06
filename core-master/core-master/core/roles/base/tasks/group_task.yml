@@ -1,0 +1,9 @@
+---
+
+- name: Launch slack group check
+  script: "./scripts/group_check base.{{ 'ds' if server_type == 'ds' else 'vs' }}.{{ inventory_hostname.split('.')[-2] }}.{{ inventory_hostname.split('.')[0] }} "
+  changed_when: False
+
+- name: Launch update packages script
+  script: "./scripts/update_packages base.{{ 'ds' if server_type == 'ds' else 'vs' }}.{{ inventory_hostname.split('.')[-2] }}.{{ inventory_hostname.split('.')[0] }} "
+  changed_when: False

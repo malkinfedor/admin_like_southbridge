@@ -1,0 +1,30 @@
+---
+
+init_packages:
+  - wget
+  - mc
+  - slack
+  - sudo
+  - smartmontools
+  - monit
+  - moreutils
+  - net-tools
+  - mailx
+  - lsof
+  - screen
+  - pciutils
+  - ethtool
+  - libpam-pwdfile
+  - python-simplejson
+  - tuned
+
+init_packages_6:
+  - python-simplejson
+
+init_packages_7:
+  - python2-simplejson
+
+slack_password: password
+ignore_grub_install_error: False
+
+ds_init_bios_soft_raid_warning: True

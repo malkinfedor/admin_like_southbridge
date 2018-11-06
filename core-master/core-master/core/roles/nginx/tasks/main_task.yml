@@ -1,0 +1,203 @@
+---
+- name: Yum install packages
+  yum:
+    name: "{{ item }}"
+    enablerepo: southbridge-stable
+    state: present
+  with_items:
+    - nginx
+    - goaccess
+    - httpd-tools
+
+- name: guess ulimit nginx conf
+  lineinfile:
+    path: /etc/sysconfig/nginx
+    regexp: '^ULIMIT='
+    state: present
+    insertafter: EOF
+    line: ULIMIT='-n 65536'
+
+- name: create subdirectories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - /etc/nginx/vhosts.d
+    - /var/log/nginx
+    - /var/cache/nginx
+    - /var/www/html
+
+- name: create rhel7 subdirectories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - /etc/systemd/system/nginx.service.d
+  when: ansible_distribution_major_version == '7'
+
+- name: Template Nginx config (rhel6)
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/logrotate.d/projects-cron-logs',
+        dest: '/etc/logrotate.d/projects-cron-logs',
+        mode: '0644' }
+  when: ansible_distribution_major_version == '6'
+
+- name: Template Nginx config (rhel7)
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/logrotate.d/projects-cron-logs-rhel7',
+        dest: '/etc/logrotate.d/projects-cron-logs',
+        mode: '0644' }
+  when: ansible_distribution_major_version == '7'
+
+- name: Template Nginx configs
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/logrotate.d/hosting',
+        dest: '/etc/logrotate.d/hosting',
+        mode: '0644' }
+    - { src: 'etc/nginx/fastcgi_params',
+        dest: '/etc/nginx/fastcgi_params',
+        mode: '0644' }
+    - { src: 'etc/nginx/nginx.conf',
+        dest: '/etc/nginx/nginx.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/proxy.inc.conf',
+        dest: '/etc/nginx/proxy.inc.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/server.inc.conf',
+        dest: '/etc/nginx/server.inc.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/default-server.inc.conf',
+        dest: '/etc/nginx/default-server.inc.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/vhost-default.inc.conf',
+        dest: '/etc/nginx/vhost-default.inc.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/vhost.inc.conf',
+        dest: '/etc/nginx/vhost.inc.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/allow_ip_pma.conf',
+        dest: '/etc/nginx/allow_ip_pma.conf',
+        mode: '0644' }
+    - { src: 'etc/nginx/whitelist_bot.inc.conf',
+        dest: '/etc/nginx/whitelist_bot.inc.conf',
+        mode: '0644' }
+    - { src: 'etc/security/limits.d/80-nginx.conf',
+        dest: '/etc/security/limits.d/80-nginx.conf',
+        mode: '0644' }
+  notify: reload nginx
+
+- name: Copy certs and htmls for default server
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/pki/tls/certs/default.io.crt',
+        dest: '/etc/pki/tls/certs/default.io.crt',
+        mode: '0644' }
+    - { src: 'etc/pki/tls/private/default.io.key',
+        dest: '/etc/pki/tls/private/default.io.key',
+        mode: '0600' }
+    - { src: 'var/www/html/index.html',
+        dest: '/var/www/html/index.html',
+        mode: '0644' }
+    - { src: 'var/www/html/http.html',
+        dest: '/var/www/html/http.html',
+        mode: '0644' }
+  notify: reload nginx
+
+- name: check exists module.inc.conf
+  stat:
+    path: /etc/nginx/module.inc.conf
+  register: nginx_module_inc_conf
+
+- name: Template module.inc.conf
+  template:
+    src: "etc/nginx/module.inc.conf"
+    dest: "/etc/nginx/module.inc.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  when: nginx_module_inc_conf.stat.exists == False
+
+- name: Template configs for monit
+  template:
+    src: "etc/monit.d/nginx"
+    dest: "/etc/monit.d/nginx"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart monit
+
+- name: Template rhel7 config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/systemd/system/nginx.service.d/override.conf',
+        dest: '/etc/systemd/system/nginx.service.d/override.conf',
+        mode: '0644' }
+  when: ansible_distribution_major_version == '7'
+  notify: reload nginx
+
+- name: enable and launch nginx service
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+
+- name: check PMA htpasswd
+  stat:
+    path: "/etc/nginx/.htpasswd.pma"
+  register: nginx_htpasswd_pma
+
+- name: check PMA allow_ip_pma.conf
+  file:
+    path: /etc/nginx/allow_ip_pma.conf
+    state: touch
+  changed_when: false
+
+- block:
+  - name: get PMA password from urandom
+    shell: "cat /dev/urandom | tr -dc A-Za-z0-9 | head -c8"
+    register: nginx_pma_password
+  - name: Template .htpasswd.pma
+    template:
+      src: "etc/nginx/.htpasswd.pma"
+      dest: "/etc/nginx/.htpasswd.pma"
+      owner: root
+      group: root
+      mode: "0644"
+  - name: htpasswd generated PMA password
+    command: "/usr/bin/htpasswd -b /etc/nginx/.htpasswd.pma madmin {{ nginx_pma_password.stdout }}"
+  when: nginx_htpasswd_pma.stat.exists == False
+...

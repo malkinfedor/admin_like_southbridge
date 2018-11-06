@@ -1,0 +1,1 @@
+00 * * * * root /srv/southbridge/bin/sas2raid-check.sh

@@ -1,0 +1,25 @@
+---
+- name: "Addresses and hosts in {{ base_hostsfile }} (local)"
+  blockinfile:
+    path: "{{ base_hostsfile }}"
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: BASE LOCAL"
+    block: |
+      {% for item in base_etc_hosts_local %}
+      {{ item.ipaddr }} {{ item.host }}.{{ ansible_nodename.split('.')[1:]|join('.') }} {{ item.host }}
+      {% endfor %}
+  when: base_etc_hosts_local is defined
+  tags: [hosts]
+
+- name: "Addresses and hosts in {{ base_hostsfile }} (common)"
+  blockinfile:
+    path: "{{ base_hostsfile }}"
+    insertafter: EOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: BASE COMMON"
+    block: |
+      {% for item in base_etc_hosts_common %}
+      {{ item.ipaddr }} {{ item.fqdn }}
+      {% endfor %}
+  when: base_etc_hosts_common is defined
+  tags: [hosts]
+...

@@ -1,0 +1,23 @@
+$TTL		86400
+$ORIGIN		##FQDN##.
+
+@	IN	SOA		##NS1_FQDN##.	##HOSTMASTER_EMAIL##. (
+		1		; Serial
+		28800		; Refresh
+		7200		; Retry
+		604800		; Expire
+		86400)		; Minimum
+		IN NS		##NS1_FQDN##.
+		IN NS		##NS2_FQDN##.
+		IN MX		10 aspmx.l.google.com.
+		IN MX		20 alt1.aspmx.l.google.com.
+		IN MX		20 alt2.aspmx.l.google.com.
+		IN MX		30 aspmx2.googlemail.com.
+		IN MX		30 aspmx3.googlemail.com.
+		IN MX		30 aspmx4.googlemail.com.
+		IN MX		30 aspmx5.googlemail.com.
+		IN A		##IP##
+		IN TXT		"v=spf1 a a:##SMTP_FQDN## include:aspmx.googlemail.com -all"
+www		IN CNAME	##FQDN##.
+
+mail		IN CNAME	ghs.google.com.

@@ -1,0 +1,13 @@
+/var/log/mysqld.log {
+    weekly
+    rotate 4
+    nocompress
+    create 660 mysql mysql
+    dateext
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+      /usr/bin/mysqladmin -uroot -p`cat /root/.mysql` flush-logs
+    endscript
+}

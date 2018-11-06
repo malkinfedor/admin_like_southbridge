@@ -1,0 +1,5 @@
+# list of rpm packet, which do not install by script
+EXCLUDE_PACKET="kernel|openssl|mysql|Percona|postgresql|mongo|redis|nginx|httpd|python|php|npm|node|ruby|jdk|java|jre|couchbase|sphinx|perl"
+
+# list of file, which ignore check
+EXCLUDE_FILE='/usr/sbin/apachectl|python|\.pyc$| /lib/udev|igb.ko|/usr/bin/rake|/usr/bin/rdoc|/usr/bin/ri|/usr/local/psa/|/usr/lib64/plesk|redhat-set_hostname.sh|debian-set_hostname.sh|60-persistent-storage.rules'

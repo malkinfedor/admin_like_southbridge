@@ -1,0 +1,19 @@
+---
+- name: check if bootstrap is needed
+  raw: which "{{ item }}"
+  register: need_bootstrap
+  failed_when: false
+  changed_when: false
+  with_items: ["python", "pip", "dbus-daemon"]
+
+- name: install python 2.x, pip, and dbus
+  raw: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python-minimal python-simplejson python-pip dbus
+  when: "need_bootstrap.results | map(attribute='rc') | sort | last | bool"
+
+- name: install base software
+  apt: name="{{ item }}" state=present update_cache=yes
+  with_items: "{{ debian_base_software }}"
+
+- name: install aditional software
+  apt: name="{{ item }}" state=present update_cache=yes
+  with_items: "{{ debian_additional_software }}"

@@ -1,0 +1,3 @@
+
+- include: main_task.yml
+  when: "('php' in roles) or php_version is defined"

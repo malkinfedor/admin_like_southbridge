@@ -1,0 +1,30 @@
+---
+- name: "SSH iptables service script"
+  template:
+    src: "iptables/{{ admin_iptables_script }}.j2"
+    dest: "/etc/init.d/{{ admin_iptables_service }}"
+    mode: 0755
+  register: admin_iptables_script_result
+  tags: [ iptables ]
+
+- name: "SSH iptables service manage (sysVinit)"
+  service:
+    name: "{{ admin_iptables_service }}"
+    state: "{{ admin_iptables_enable|ternary('started','stopped') }}"
+    enabled: "{{ admin_iptables_enable|ternary('yes','no') }}"
+  tags: [ iptables ]
+
+- name: "SSH iptables service reloaded (sysVinit)"
+  service:
+    name: "{{ admin_iptables_service }}"
+    state: reloaded
+  when: admin_whitelist.changed
+  tags: [ iptables ]
+
+- name: "SSH iptables service restarted (sysVinit)"
+  service:
+    name: "{{ admin_iptables_service }}"
+    state: restarted
+  when: admin_iptables_script_result.changed
+  tags: [ iptables ]
+...

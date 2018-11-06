@@ -1,0 +1,38 @@
+---
+#
+# nginx.conf params
+#
+nginx_user: 'nginx'
+nginx_keepalive_timeout: '120'
+nginx_large_client_header_buffers: '8 8k'
+nginx_server_names_hash_bucket_size: '128'
+nginx_gzip_comp_level: '3'
+nginx_open_file_cache_errors: 'off'
+nginx_open_file_cache: 'max=1000 inactive=300s'
+nginx_open_file_cache_min_uses: '2'
+nginx_open_file_cache_valid: '300s'
+
+#
+# server.inc.conf
+#
+nginx_worker_processes: 'auto'
+nginx_worker_connections: '20480'
+nginx_worker_rlimit_nofile: '100000'
+
+#
+# vhost-default.inc.conf
+#
+nginx_listen: '80'
+nginx_client_max_body_size: '256m'
+nginx_limit_req_zone: '$binary_remote_addr zone=default:10m rate=60r/m'
+
+#
+# default-server.inc.conf
+#
+nginx_default_server_80_enable: true
+nginx_default_server_443_enable: true
+
+# list allowed ip to access pma
+nginx_allow_ip_pma: []
+
+...

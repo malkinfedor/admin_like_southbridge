@@ -1,0 +1,7 @@
+#
+# Ноды kubernetes
+#
+[red00]
+vs01.r00.slurm.io		ansible_host=172.20.0.2
+vs02.r00.slurm.io		ansible_host=172.20.0.3
+vs03.r00.slurm.io		ansible_host=172.20.0.4

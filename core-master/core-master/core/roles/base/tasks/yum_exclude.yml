@@ -1,0 +1,9 @@
+---
+- name: exclude packet from yum update
+  ini_file:
+    path: "/etc/yum.conf"
+    section: main
+    option: exclude
+    value: "{{ yum_exclude_from_roles|union(base_yum_exclude)|unique|join(' ') }}"
+    no_extra_spaces: yes
+...

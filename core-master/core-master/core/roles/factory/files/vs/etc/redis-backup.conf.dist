@@ -1,0 +1,66 @@
+DBHOST="localhost"
+
+# Port that mongo is listening on
+DBPORT="6379"
+
+# Backup directory location e.g /backups
+BACKUPDIR="/var/backups/redis"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="root"
+
+# ============================================================
+# === ADVANCED OPTIONS ( Read the doc's below for details )===
+#=============================================================
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY=6
+
+DAILY=10
+
+# Choose Compression type. (gzip or bzip2)
+COMP="gzip"
+
+# Choose if the uncompressed folder should be deleted after compression has completed
+CLEANUP="yes"
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST="no"
+
+# Make Hardlink not a copy
+LATESTLINK="no"
+
+# Use oplog for point-in-time snapshotting.
+OPLOG="yes"
+
+# Enable and use journaling.
+JOURNAL="yes"
+
+# Dir search with redis config
+DIR="/etc"
+
+# redis-cli path
+REDISCLI=/usr/bin/redis-cli
+
+BACKUP_AOF="no"
+BACKUP_RDB="yes"
+
+# Enable cron for run redis-cli -p port bgrewriteaof
+REWRITEAOF="yes"
+
+# when run first job (Day of mont)
+CRONSTART=1
+
+# difference between jobs (Days)
+CRONDIFFDAY=2

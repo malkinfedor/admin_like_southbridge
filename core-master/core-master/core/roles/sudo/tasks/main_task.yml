@@ -1,0 +1,79 @@
+- name: install sudo
+  yum:
+    name: sudo
+    state: present
+
+- name: create subdirectories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - /etc/sudoers.d
+
+- name: copy configs vs
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    validate: 'visudo -cf %s'
+  with_items:
+    - { src: 'etc/sudoers.vs',
+        dest: '/etc/sudoers',
+        mode: '0440' }
+  when: server_type == 'vs'
+
+- name: copy configs vds
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    validate: 'visudo -cf %s'
+  with_items:
+    - { src: 'etc/sudoers.vds',
+        dest: '/etc/sudoers',
+        mode: '0440' }
+  when: server_type == 'vds'
+
+- name: copy configs ds
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    validate: 'visudo -cf %s'
+  with_items:
+    - { src: 'etc/sudoers.ds',
+        dest: '/etc/sudoers',
+        mode: '0440' }
+  when:
+    - server_type == 'ds'
+    - virtualization_type != 'docker'
+
+- name: copy configs docker
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    validate: 'visudo -cf %s'
+  with_items:
+    - { src: 'etc/sudoers.docker',
+        dest: '/etc/sudoers',
+        mode: '0440' }
+  when:
+    - server_type == 'ds'
+    - virtualization_type == 'docker'

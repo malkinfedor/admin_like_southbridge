@@ -1,0 +1,2 @@
+00 02 * * * root /srv/southbridge/bin/couchbase-backup.sh
+00 03 * * * root /srv/southbridge/bin/mysql-backup.sh; /srv/southbridge/bin/postgresql-backup.sh; /srv/southbridge/bin/mongodb-backup.sh; /srv/southbridge/bin/redis-backup.sh; /srv/southbridge/bin/oracle-backup.sh

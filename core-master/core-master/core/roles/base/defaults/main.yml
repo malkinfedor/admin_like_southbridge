@@ -1,0 +1,173 @@
+---
+base_ipv6: false
+base_ipv4_forward_enable: false
+
+base_ntp_pool: "de.pool.ntp.org"
+base_ntpd_enable: true
+timezone: "Europe/Moscow"
+
+base_hosts_allow:
+  - '144.76.88.101'
+  - '144.76.83.139'
+  - '172.20.100.50'
+
+base_yum_exclude: []
+
+base_iptables_enable: true
+
+base_packages:
+  - slack
+  - moreutils
+  - net-tools
+  - tcping
+  - wget
+  - mc
+  - nano
+  - sudo
+  - postfix
+  - crontabs.noarch
+  - htop
+  - tree
+  - sharutils
+  - yum-protect-packages
+  - yum-protectbase
+  - perl-Tie-IxHash.noarch
+  - screen
+  - monit
+  - denyhosts
+  - iotop
+  - pciutils
+  - bind-utils
+  - traceroute
+  - man
+  - file
+  - gdisk
+  - atop
+  - vim-enhanced
+  - openssh-clients
+  - tmux
+  - ethtool
+  - bash-completion
+  - psmisc
+  - jwhois
+  - xpaste
+  - telnet
+  - bzip2
+  - lbzip2
+  - python-pip
+  - jq
+  - etckeeper
+
+base_packages_additional: []
+
+base_packages_ds:
+  - tuned
+  - ntp
+  - rdiff-backup
+  - sysstat
+
+base_packages_hw:
+  - smartmontools
+  - irqbalance
+  - mdadm
+
+base_packages_vds_kvm:
+  - qemu-guest-agent
+
+base_packages_vds_vmware:
+  - open-vm-tools
+
+base_packages_vs:
+  - bind
+
+base_packages_7:
+  - iptables-services
+
+enabled_services_ds:
+  - crond
+  - iptables
+  - monit
+  - network
+  - sshd
+  - rsyslog
+  - tuned
+  - sysctl
+
+enabled_services_hw:
+  - irqbalance
+  - smartd
+
+# Deprecated
+#  - rawdevices
+# PNP devices
+#  - messagebus
+#  mcstrans provides an translation daemon to translate SELinux categories from internal representations to user defined representation
+#  - mcstrans
+#  - ktune
+
+enabled_services_vs:
+  - crond
+  - iptables
+  - monit
+  - network
+  - rsyslog
+  - sysctl
+#  - sshd
+
+disabled_services:
+  - denyhosts
+  - atop
+  - netconsole
+  - netfs
+  - rdisc
+  - restorecond
+  - saslauthd
+  - lm_sensors
+  - microcode_ctl
+  - multipathd
+  - netplugd
+  - mdmpd
+  - cpuspeed
+#  - iscsi
+#  - iscsid
+
+disabled_services_local: []
+
+useless_pkg:
+  - acpid
+  - audit
+  - chrony
+  - firewalld
+  - firewalld-filesystem
+  - microcode
+
+useless_pkg_vm:
+  - smartmontools
+
+deleted_files:
+  - /etc/cron.d/atop.new
+  - /etc/logrotate.d/vzbackup
+  - /etc/cron.d/_sb_autostart_service_check.sh
+  - /etc/cron.d/_sb_vz_backup_config_check.sh
+
+iptables_additional_rules: []
+iptables_base_tcp_ports: "111,2812,10050,5900:5910"
+iptables_base_udp_ports: "111,123,161"
+
+base_monit_la5: '__LA5__'
+base_monit_la15: '__LA15__'
+base_monit_ntpd_cycles: 24
+
+base_named_enable: true
+base_atop_enable: true
+
+# lines for custom resolv.conf
+#base_resolv_conf: []
+backup_remote_hosts: "vzbackups.slurm.io"
+
+#vs_hard_procs: 
+vs_soft_procs: 4096
+
+#ds_hard_procs:
+ds_soft_procs: 16384
+...

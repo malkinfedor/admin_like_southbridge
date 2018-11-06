@@ -1,0 +1,3 @@
+check file crond_messages with path /var/log/cron
+    if match 'WRONG FILE OWNER' then alert
+    if match 'BAD FILE MODE' then alert

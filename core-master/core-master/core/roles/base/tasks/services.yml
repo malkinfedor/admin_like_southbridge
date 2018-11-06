@@ -1,0 +1,100 @@
+---
+- name: enable service scripts (fix)
+  command: "chkconfig --add {{ item }}"
+  with_items:
+    - sysctl
+  when: ansible_distribution_major_version == "7"
+  changed_when: false
+
+- name: add services ds
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items: "{{ enabled_services_ds }}"
+  when: server_type == "ds"
+  ignore_errors: yes
+
+- name: enable phys. services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items: "{{ enabled_services_hw }}"
+  when: ansible_virtualization_role == 'host'
+
+- name: add services vs
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items: "{{ enabled_services_vs }}"
+  when: ( server_type == 'vs' ) or ( server_type == 'vds' )
+
+- name: disable services
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - "{{ disabled_services }}"
+    - "{{ disabled_services_local }}"
+  register: disabled_service_result
+  failed_when: >
+    disabled_service_result is failed
+    and ('Could not find the requested service' not in disabled_service_result.msg
+    and ' found ' not in disabled_service_result.msg
+    and 'failed determining service state' not in disabled_service_result.msg )
+
+- name: manage mdmonitor service
+  service:
+    name: mdmonitor
+    state: "{{ mdraid_is_present|ternary('started','stopped') }}"
+    enabled: "{{ mdraid_is_present|ternary('yes','no') }}"
+  when: server_type == "ds"
+  register: disabled_service_result
+  failed_when: >
+    disabled_service_result is failed
+    and ('Could not find the requested service' not in disabled_service_result.msg
+    and ' found ' not in disabled_service_result.msg
+    and 'failed determining service state' not in disabled_service_result.msg )
+
+- name: manage lvm2-monitor service
+  service:
+    name: lvm2-monitor
+    state: "{{ lvm_is_present|ternary('started','stopped') }}"
+    enabled: "{{ lvm_is_present|ternary('yes','no') }}"
+  register: disabled_service_result
+  failed_when: >
+    disabled_service_result is failed
+    and ('Could not find the requested service' not in disabled_service_result.msg
+    and ' found ' not in disabled_service_result.msg
+    and 'failed determining service state' not in disabled_service_result.msg )
+
+- name: check for org.qemu.guest_agent.0 device
+  command: lspci
+  register: base_lspci_result
+  changed_when: false
+  when:
+    - ansible_virtualization_type == 'kvm'
+    - ansible_virtualization_role == 'guest'
+
+- name: enable qemu-quest-agent
+  service:
+    name: "{{ (ansible_distribution_major_version|int >= 7)|ternary('qemu-guest-agent','qemu-ga') }}"
+    state: started
+    enabled: yes
+  when:
+    - ansible_virtualization_type == 'kvm'
+    - ansible_virtualization_role == 'guest'
+    - "'Virtio console' in base_lspci_result.stdout"
+
+- name: "service: enable open-vm-tools (vmtoolsd)"
+  service:
+    name: vmtoolsd
+    state: started
+    enabled: yes
+  when:
+    - ansible_virtualization_type == 'VMware'
+    - ansible_virtualization_role == 'guest'
+...

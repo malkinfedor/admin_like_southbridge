@@ -1,0 +1,38 @@
+#
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+#
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+{% if 'openvpn' in roles %}
+-A INPUT -p {{ openvpn_proto|default('udp') }} --dport {{ openvpn_port|default('1194') }} -j ACCEPT
+{% endif %}
+{% for item in iptables_additional_rules %}
+{{ item }}
+{% endfor %}
+{% if server_type == 'vs' %}
+-A INPUT -p tcp -m multiport --dports 20,21,25,80,443,49900:50000 -j ACCEPT
+-A INPUT -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -p udp -j REJECT --reject-with icmp-port-unreachable
+-A INPUT -j REJECT --reject-with icmp-proto-unreachable
+{% endif %}
+COMMIT
+{% if 'nat' in roles or iptables_additional_nat_rules is defined %}
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+{% if iptables_additional_nat_rules is defined %}
+{% for item in iptables_additional_nat_rules %}
+{{ item }}
+{% endfor %}
+{% endif %}
+{% if 'nat' in roles %}
+-A POSTROUTING -s {{ nat_network|default('192.168.100.0/24') }} -o {{ nat_interface|default(ansible_default_ipv4["interface"],true) }} -j SNAT --to-source {{ nat_ip_address|default(ansible_default_ipv4["address"],true) }}
+{% endif %}
+COMMIT
+{% endif %}

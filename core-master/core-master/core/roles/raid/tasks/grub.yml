@@ -1,0 +1,31 @@
+---
+
+- name: Abort if system is not RedHat family
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: ( ansible_os_family != "RedHat" )
+
+- name: Abort if system is not RedHat family 6 or 7 distro
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: (( ansible_distribution_major_version != "6" ) and ( ansible_distribution_major_version != "7" ))
+
+- include: detect.yml
+
+- debug: var=raid_type
+
+- block:
+#  - name: Deploying Grub install script
+#    copy: src=installgrub.sh dest=/tmp/installgrub.sh mode=0755
+  - name: Grub install on md mirror raid
+    become: true
+#    shell: /tmp/installgrub.sh 2>&1
+    script: ./scripts/installgrub.sh 2>&1
+    register: grubinstall
+  - debug: msg="{{ grubinstall.stdout.split('\n') }}"
+  - debug: msg="{{ errormsg.split('\n') }}"
+    vars:
+      errormsg: "\nGrub install failed.\nYou may set varaible \nignore_grub_install_error=True\n to skip this test"
+    when: grubinstall.rc > 0 and ignore_grub_install_error == False
+  - fail: msg="Grub install failed."
+    when: grubinstall.rc > 0 and ignore_grub_install_error == False
+  when: raid_type == "md"
+

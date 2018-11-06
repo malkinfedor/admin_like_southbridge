@@ -1,0 +1,52 @@
+---
+- name: Abort if system is not RedHat family
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: ( ansible_os_family != "RedHat" )
+
+- name: Abort if system is not RedHat family 6 or 7 distro
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: (( ansible_distribution_major_version != "6" ) and ( ansible_distribution_major_version != "7" ))
+
+- include: detect.yml
+
+#- name: Detect RAID type
+#  set_fact: raid_type=md
+#  when: "'/dev/md' in item.device"
+#  with_items: "{{ ansible_mounts }}"
+
+
+- block:
+  - name: Install utility hpsscli
+    yum: name=hpsscli state=present
+  - copy: src=hp/hpraid  dest=/etc/cron.d/hpraid mode=0644
+  - file: path=/srv/southbridge/bin state=directory
+  - copy: src=hp/hpraid.pl  dest=/srv/southbridge/bin/hpraid.pl mode=0755
+  when: raid_type == "HP"
+
+- block:
+  - name: Install utility arcconf
+    yum: name=arcconf state=present
+  - copy: src=adaptec/aacraid dest=/etc/cron.d/aacraid mode=0644
+  - file: path=/srv/southbridge/bin state=directory
+  - copy: src=adaptec/aacraid-check.sh  dest=/srv/southbridge/bin/aacraid-check.sh mode=0755
+  - copy: src=adaptec/aacraid-status.sh  dest=/srv/southbridge/bin/aacraid-status.sh mode=0755
+  when: raid_type == "Adaptec"
+
+- block:
+  - name: Install utility megaraid
+    yum: name=megacli state=present
+  - copy: src=megaraid/megaraid dest=/etc/cron.d/megaraid mode=0644
+  - file: path=/srv/southbridge/bin state=directory
+  - copy: src=megaraid/megaraid-check.sh  dest=/srv/southbridge/bin/megaraid-check.sh mode=0755
+  - copy: src=megaraid/megaraid-status.sh  dest=/srv/southbridge/bin/megaraid-status.sh mode=0755
+  when: raid_type == "LSI"
+
+- block:
+  - name: Install utility sas2ircraid
+    yum: name=sas2ircu state=present
+  - copy: src=sas2/sas2raid dest=/etc/cron.d/sas2raid mode=0644
+  - file: path=/srv/southbridge/bin state=directory
+  - copy: src=sas2/sas2raid-check.sh  dest=/srv/southbridge/bin/sas2raid-check.sh mode=0755
+  - copy: src=sas2/sas2raid-status.sh  dest=/srv/southbridge/bin/sas2raid-status.sh mode=0755
+  when: raid_type == "sas2"
+...

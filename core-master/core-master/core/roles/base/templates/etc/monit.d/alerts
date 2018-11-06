@@ -1,0 +1,14 @@
+{% if postfix_relayhost is defined and postfix_relayhost != '' %}
+set mailserver {{postfix_relayhost}} port {{postfix_relayhost_port|default('25')}}
+{% if postfix_send_user is defined and postfix_send_user != '' %}
+ username "{{postfix_send_user}}" password "{{postfix_send_password|default('')}}"
+{% endif %}
+ with timeout 30 seconds
+{% else %}
+set mailserver localhost with timeout 30 seconds
+{% endif %}
+set mail-format { subject: $HOST monit - $EVENT $SERVICE }
+set alert root@localhost but not on { instance 
+					   pid
+					   ppid
+					   action }

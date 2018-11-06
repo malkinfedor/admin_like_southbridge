@@ -1,0 +1,13 @@
+---
+
+- name: delete old files
+  file:
+    name: "{{ item }}"
+    state: absent
+  with_items: "{{ deleted_files }}"
+
+- name: delete ds-init sudoers config
+  file:
+    name: /etc/sudoers.d/ds-init-remove-this
+    state: absent
+  when: ansible_user == "ansible"

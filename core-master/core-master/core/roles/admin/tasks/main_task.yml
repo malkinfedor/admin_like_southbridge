@@ -1,0 +1,126 @@
+---
+- name: config sudo
+  import_role:
+    name: sudo
+
+- name: Create admin users
+  user:
+    name: "{{ item.name }}"
+    createhome: yes
+    comment: "{{ item.comment }}"
+    password: "{{ item.password }}"
+    state: present
+    group: wheel
+    update_password: always
+  with_items:
+    - "{{ users }}"
+  when:
+    - (admin_allowed_list is not defined) or (admin_allowed_list is defined and item.name in admin_allowed_list)
+  tags: [ users ]
+
+- name: Lock admin password if is empty
+  user:
+    name: "{{ item.name }}"
+    state: present
+    password_lock: "{{ ( item.password == '' ) | ternary('yes','no') }}"
+  with_items:
+    - "{{ users }}"
+  when:
+    - (admin_allowed_list is not defined) or (admin_allowed_list is defined and item.name in admin_allowed_list)
+  tags: [ users ]
+
+- name: Create list of admin users
+  lineinfile:
+    path: /root/.admins
+    create: yes
+    state: present
+    line: "{{ item.name }}"
+  with_items:
+    - "{{ users }}"
+  when:
+    - (admin_allowed_list is not defined) or (admin_allowed_list is defined and item.name in admin_allowed_list)
+  tags: [ users ]
+
+- name: Set SSH keys
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{lookup('file','home/'~ item.name ~'/.ssh/authorized_keys')}}"
+    state: present
+    exclusive: "{{ admin_keys_exclusive|ternary(true,false) }}"
+  with_items:
+    - "{{ users }}"
+  when:
+    - (admin_allowed_list is not defined) or (admin_allowed_list is defined and item.name in admin_allowed_list)
+    - lookup('pipe', '[ -f ' + role_path + '/files/home/' + item.name + '/.ssh/authorized_keys ] && echo "file_exists" || :') == 'file_exists'
+  tags: [ users, keys ]
+
+- name: Remove SSH keys
+  file:
+    path: '/home/{{ item.name }}/.ssh/authorized_keys'
+    state: absent
+  with_items:
+    - "{{ users }}"
+  when:
+    - (admin_allowed_list is not defined) or (admin_allowed_list is defined and item.name in admin_allowed_list)
+    - lookup('pipe', '[ -f ' + role_path + '/files/home/' + item.name + '/.ssh/authorized_keys ] && echo "file_exists" || :') != 'file_exists'
+  tags: [ users, keys ]
+
+- name: Delete users
+  user:
+    name: "{{ item }}"
+    state: absent
+    force: yes
+    remove: yes
+  with_items:
+    - "{{ deleted_users }}"
+  tags: [ users ]
+
+- name: Remove deleted admins from list of admin users
+  become: true
+  lineinfile:
+    path: /root/.admins
+    create: yes
+    state: absent
+    line: "{{ item }}"
+  with_items:
+    - "{{ deleted_users }}"
+  tags: [ users ]
+
+- name: Delete users wich not allowed by admin_allowed_list
+  user:
+    name: "{{ item.name }}"
+    state: absent
+    force: yes
+    remove: yes
+  with_items:
+    - "{{ users }}"
+  when:
+    - admin_allowed_list is defined
+    - item.name not in admin_allowed_list
+  tags: [ users ]
+
+- name: Remove deleted admins from list of admin users
+  become: true
+  lineinfile:
+    path: /root/.admins
+    create: yes
+    state: absent
+    line: "{{ item.name }}"
+  with_items:
+    - "{{ users }}"
+  when:
+    - admin_allowed_list is defined
+    - item.name not in admin_allowed_list
+  tags: [ users ]
+
+#- name: reset root pass
+#  become: true
+#  shell: "grep -E '^root:[^!]' /etc/shadow && (passwd -d root ; passwd -l root) ||:"
+
+- include: set_key_for_current.yml
+
+- include: iptables.yml
+
+- include: tmp_iptables_remove_old.yml
+
+...

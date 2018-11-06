@@ -1,0 +1,40 @@
+################################################
+# DDOS Protect
+
+# interval to scan log in minutes
+INTERVAL_MIN=20
+
+#
+RECORDS=1500
+
+# Domain list
+DOMAIN_LIST=""
+
+# Block time (in minutes)
+BLOCK_TIME=180
+
+# White list IP
+IP_WHITELIST="136.243.83.53 144.76.88.101 "
+
+# White list PTR
+BOTS="google|yandex|msn.com|yahoo.com|mail.ru"
+
+# Enable/Disable Block mode
+BLOCK_ENABLE=false
+
+# send email
+email=""
+
+# false - not block IP if there is a PTR record
+BLOCK_WITH_PTR=true
+
+# new in v.1.1.8
+DETAILLOG=true
+
+LOGFILE=/var/log/ddos-table.log
+
+LOGFILE2=/var/log/ddos-table-history.log
+
+IPT="/sbin/iptables"
+
+LOCK=/tmp/ddos.lock

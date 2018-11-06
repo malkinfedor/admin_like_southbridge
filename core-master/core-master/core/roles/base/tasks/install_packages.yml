@@ -1,0 +1,67 @@
+---
+- name: install repo
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - epel-release
+
+- name: install southbridge repo
+  include: ../../main/tasks/southbridge-repo.yml
+
+- name: Uninstalling packages
+  yum: pkg={{ item }} state=absent
+  with_items: "{{ useless_pkg }}"
+  ignore_errors: true
+
+- name: "Uninstalling packages (VM)"
+  yum: pkg={{ item }} state=absent
+  with_items: "{{ useless_pkg_vm }}"
+  when: ansible_virtualization_role == 'guest'
+
+- name: Installing packages
+  yum: pkg={{ item }} state=present
+  with_items:
+    - "{{ base_packages }}"
+    - "{{ base_packages_additional }}"
+
+- name: "Installing packages ds/vds"
+  yum: pkg={{ item }} state=present
+  with_items: "{{ base_packages_ds }}"
+  when: ( server_type == 'vds' or server_type == 'ds')
+
+- name: "Installing packages ds"
+  yum: pkg={{ item }} state=present
+  with_items: "{{ base_packages_hw }}"
+  when: ( ansible_virtualization_role == 'host' or server_type == 'ds' )
+
+- name: "Installing packages vds (qemu-kvm)"
+  yum: pkg={{ item }} state=present
+  with_items: "{{ base_packages_vds_kvm }}"
+  when:
+    - ansible_virtualization_role == 'guest'
+    - ansible_virtualization_type == 'kvm'
+
+- name: "Installing packages vds (vmware)"
+  package: pkg={{ item }} state=present
+  with_items: "{{ base_packages_vds_vmware }}"
+  when:
+    - ansible_virtualization_role == 'guest'
+    - ansible_virtualization_type == 'VMware'
+
+- name: Installing packages vs
+  yum: pkg={{ item }} state=present
+  with_items: "{{ base_packages_vs }}"
+  when: ( server_type == 'vs' or server_type == 'vds')
+
+- name: Installing packages rhel7
+  yum: pkg={{ item }} state=present
+  with_items: "{{ base_packages_7 }}"
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Installing packages
+  yum: pkg={{ item }} state=present
+  with_items: "{{ additional_base_packages }}"
+  when: additional_base_packages is defined
+...

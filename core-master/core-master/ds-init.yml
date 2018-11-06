@@ -1,0 +1,38 @@
+---
+# vim: ft=ansible:
+- hosts:
+  - "red00"
+  vars:
+    ansible_ssh_port: 22
+    ansible_ssh_user: "root"
+    ansible_ssh_common_args: "{{ (ansible_ssh_proxy is undefined or ansible_ssh_proxy == '') | ternary('', '-o ProxyCommand=\"ssh -W %h:%p -q red00@' ~ ansible_ssh_proxy | default('',boolean=True) ~ ' -p 22\"') }}"
+    need_restart: true
+    ds_init: true
+  pre_tasks:
+    - fail: msg="This playbook run only one time. ansible_user should be not 'ansible'"
+      when: ansible_user == "ansible"
+  roles:
+    - init-variables
+    - ds-init
+    - raid
+    - sudo
+    - admin
+    - base
+    - factory
+    - postfix
+    - nginx
+    - php
+    - httpd
+    - php-fpm
+    - mysql
+    - pure-ftpd
+  post_tasks:
+   - name: restart server
+     shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+     async: 1
+     poll: 0
+     ignore_errors: true
+     when:
+       - need_restart is defined
+       - need_restart
+...

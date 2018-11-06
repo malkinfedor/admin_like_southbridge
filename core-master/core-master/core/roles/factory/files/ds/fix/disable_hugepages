@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# disable_hugepages    This shell script enables ssh access from whitelist
+#
+# chkconfig:    - 50 12
+#
+# description:  Enable execution of SSH whitelist access
+# processname   disable_hugepages
+#
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+case "$1" in
+  start)
+    echo never > /sys/kernel/mm/transparent_hugepage/defrag
+    echo never > /sys/kernel/mm/transparent_hugepage/enabled
+        ;;
+  stop)
+        ;;
+  restart|force-reload)
+        ;;
+  reload)
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|force-reload}"
+        exit 1
+esac
+
+exit 0
+

@@ -1,0 +1,9 @@
+/var/log/vz-backup.log {
+    daily
+    rotate 4
+    compress
+    size 1M
+    dateext
+    missingok
+    notifempty
+}

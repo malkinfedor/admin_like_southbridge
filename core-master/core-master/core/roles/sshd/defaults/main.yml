@@ -1,0 +1,4 @@
+---
+
+sshd_2fa_enable: False
+sshd_permit_root_login: 'yes'

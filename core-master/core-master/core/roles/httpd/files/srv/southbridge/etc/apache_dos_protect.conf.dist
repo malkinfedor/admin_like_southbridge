@@ -1,0 +1,26 @@
+#############################################
+# Configuration file for Apache DOS protect #
+#############################################
+
+# Default variables
+
+# block IP if match rules $BLOCK_PERCENT
+BLOCK_IP=false
+
+# limit (in %) for activate BLOCK_IP and/or KILL_BLOCK_HTTPD_WORKERS
+BLOCK_PERCENT=50
+
+# Block IP in minutes
+BLOCK_TIME=30
+
+# Kill httpd workers if match rules $BLOCK_PERCENT
+KILL_BLOCK_HTTPD_WORKERS=false
+
+# add to logfile data from apache-status
+DUMP_LOG=true
+
+# Add to logfile dump from apache-status if all workers more $DUMP_LOG_PERCENT
+DUMP_LOG_PERCENT=75
+
+# Exclude IP (not work CIDR)
+EXCLUDE_IPS=""

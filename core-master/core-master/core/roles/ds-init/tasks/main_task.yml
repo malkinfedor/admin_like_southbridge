@@ -1,0 +1,99 @@
+---
+- import_tasks: networkmanager.yml
+
+- import_tasks: resolv.yml
+
+- name: Installing selinux python bindings
+  yum: name=libselinux-python state=present
+
+- name: disable selinux
+  selinux:
+    state: disabled
+
+- name: Adding noatime for /
+  mount:
+    name: "{{ item.mount }}"
+    src: "{{ item.device }}"
+    fstype: "{{ item.fstype }}"
+    opts: "{{ item.options }},noatime"
+    state: present
+  with_items: "{{ ansible_mounts }}"
+  when: (item.mount == "/" or item.mount == "/vz") and item.options.find("noatime") == -1
+  tags: noatime
+
+- name: Setting hostname
+  hostname: name={{ inventory_hostname }}
+
+- name: Removing packages
+  yum: pkg={{ item }} state=absent
+  with_items:
+    - audit
+    - acpid
+    - iptables-ipv6
+  ignore_errors: true
+
+#- name: Installing rpmforge repo Centos
+#  yum:
+#    name: ftp://ftp.pbone.net/mirror/dag.wieers.com/redhat/el{{ansible_distribution_major_version}}/en/x86_64/dag/RPMS/rpmforge-release-0.5.3-1.el{{ansible_distribution_major_version}}.rf.x86_64.rpm
+#    state: present
+
+- name: Installing epel repo CentOS
+  yum:
+    name: epel-release
+    state: present
+  when: ansible_distribution == 'CentOS'
+
+- name: Installing epel repo RHEL
+  yum:
+    name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+    state: present
+  when: ansible_distribution == 'RedHat'
+
+- name: install southbridge repo
+  include: ../../main/tasks/southbridge-repo.yml
+
+- name: Installing packages
+  yum:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ init_packages }}"
+
+- name: Install RHEL6 packages
+  yum:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ init_packages_6 }}"
+  when: ansible_distribution_major_version == '6'
+
+- name: Install RHEL7 packages
+  yum:
+    pkg: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ init_packages_7 }}"
+  when: ansible_distribution_major_version == '7'
+
+- name: Update all packages
+  yum:
+    pkg: "*"
+    state: latest
+    update_cache: yes
+  tags: skip_ansible_lint
+
+- name: Generating RSA key for root
+  user: name=root generate_ssh_key=yes
+  tags: ssh-keygen
+
+- include: tuned.yml
+
+- include: tune2fs.yml
+
+
+- include: e1000e_fix.yml
+  when: server_type == 'ds'
+
+- include: aspm_fix_centos6.yml
+  when:
+    - ansible_distribution_major_version == "6"

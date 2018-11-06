@@ -1,0 +1,48 @@
+- name: copy config
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+    validate: /usr/sbin/sshd -t -f %s
+  with_items:
+    - { src: 'etc/ssh/sshd_config',
+        dest: '/etc/ssh/sshd_config',
+        mode: '0644' }
+  notify: restart sshd
+  when: sshd_enable == true
+
+- name: copy rhel7 config
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/ssh/ssh_config',
+        dest: '/etc/ssh/ssh_config',
+        mode: '0644' }
+  notify: restart sshd
+  when:
+    - ansible_distribution_major_version == '7'
+    - sshd_enable == true
+
+- name: start service sshd
+  become: true
+  service:
+    name: sshd
+    state: started
+    enabled: yes
+  when: sshd_enable == true
+
+- name: stop service sshd
+  become: true
+  service:
+    name: sshd
+    state: stopped
+    enabled: no
+  when: sshd_enable == false

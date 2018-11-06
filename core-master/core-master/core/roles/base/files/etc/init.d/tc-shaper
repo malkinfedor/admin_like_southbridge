@@ -1,0 +1,117 @@
+#!/bin/bash
+#########################
+# tc-shaper v1.1        #
+#########################
+
+# chkconfig:    2345 99 99
+# description:  tc-shaper
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+PATH="/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin"
+LOCATION="/srv/southbridge"
+
+# Name of the traffic control command.
+TC=/sbin/tc
+
+# The network interface we're planning on limiting bandwidth.
+IF=eth0
+
+# Upload limit (in mega bits)
+UPLD=100Mbit
+
+# Remote port
+PORT=22
+
+# read configuration
+
+if [ -f "$LOCATION/etc/vz-backup.conf.dist" ]; then
+    . "$LOCATION/etc/vz-backup.conf.dist"
+    if [ -f "$LOCATION/etc/vz-backup.conf" ]; then
+        . "$LOCATION/etc/vz-backup.conf"
+    fi
+    if [ -f "$LOCATION/etc/vz-backup.local.conf" ]; then
+        . "$LOCATION/etc/vz-backup.local.conf"
+    fi
+else
+    echo "vz-backup.conf.dist not found"
+    exit 0
+fi
+
+
+# Filter options for limiting the intended interface.
+U32="$TC filter add dev $IF protocol ip parent 1:0 prio 1 u32"
+
+class=2
+
+start() {
+        $TC qdisc add dev $IF root handle 1: htb default 30
+    for REMOTE_HOST in $REMOTE_HOSTS; do
+        IP=`dig +short $REMOTE_HOST`
+        $TC class add dev $IF parent 1: classid 1:$class htb rate $UPLD
+        $U32 match ip dst $IP/32 match ip dport $PORT 0xffff flowid 1:$class
+        class=$((class + 1))
+    done
+}
+
+stop() {
+    $TC qdisc del dev $IF root 2> /dev/null
+    $TC qdisc del dev $IF ingress 2> /dev/null
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+show() {
+    $TC -s qdisc ls dev $IF
+}
+
+list() {
+    $TC -d qdisc show dev $IF
+    $TC -d class show dev $IF
+    $TC -d filter show dev $IF
+}
+
+case "$1" in
+start)
+    echo -n "Starting bandwidth shaping ($UPLD): "
+    start
+    echo "done"
+;;
+
+stop)
+    echo -n "Stoping bandwidth shaping: "
+    stop
+    echo "done"
+;;
+
+restart)
+    echo -n "Restarting bandwidth shaping ($UPLD): "
+    restart
+    echo "done"
+;;
+
+show)
+    echo "Bandwidth shaping status for $IF:"
+    show
+    echo ""
+;;
+
+list)
+    list
+;;
+
+*)
+    echo "Usage: tc-shaper {start|stop|restart|show}"
+;;
+
+esac
+
+exit 0

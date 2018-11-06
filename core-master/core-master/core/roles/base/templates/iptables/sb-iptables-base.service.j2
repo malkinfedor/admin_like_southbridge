@@ -1,0 +1,20 @@
+#
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+#
+[Unit]
+Description=Custom firewall base chain
+After=syslog.target iptables.service
+PartOf=iptables.service
+AssertPathExists={{ base_sb_etc }}/{{ base_iptables_config }}
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart={{ base_sb_libexec }}/{{ base_iptables_script }} start
+ExecReload={{ base_sb_libexec }}/{{ base_iptables_script }} reload
+ExecStop={{ base_sb_libexec }}/{{ base_iptables_script }} stop
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=basic.target

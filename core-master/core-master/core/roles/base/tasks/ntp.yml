@@ -1,0 +1,56 @@
+---
+- name: "Template NTP configuration file"
+  template:
+    src: "etc/ntp.conf.j2"
+    dest: "{{ base_ntp_conf }}"
+    owner: root
+    group: root
+    mode: 0444
+  notify: restart ntpd
+  tags: [ ntp ]
+
+- name: NTPd service status
+  service:
+    name: ntpd
+    state: "{{ base_ntpd_enable|ternary('started','stopped') }}"
+    enabled: "{{ base_ntpd_enable|ternary('yes','no') }}"
+  tags: [ ntp ]
+
+- name: Cron ntpdate task (absent)
+  file:
+    path: "{{ base_ntp_cron }}"
+    state: absent
+  when: base_ntpd_enable
+  notify: reload crond
+  tags: [ ntp ]
+
+- name: Cron ntpdate task (present)
+  template:
+    src: "ds{{ base_ntp_cron }}"
+    dest: "{{ base_ntp_cron }}"
+    owner: root
+    group: root
+    mode: "0444"
+  when: not base_ntpd_enable
+  notify: reload crond
+  tags: [ ntp ]
+
+- name: "ntpd config for monit (present)"
+  template:
+    src: "ds{{ base_monit_ntpd }}"
+    dest: "{{ base_monit_ntpd }}"
+    owner: root
+    group: root
+    mode: "0444"
+  notify: restart monit
+  when: base_ntpd_enable
+  tags: [ ntp ]
+
+- name: "ntpd config for monit (absent)"
+  file:
+    path: "{{ base_monit_ntpd }}"
+    state: absent
+  notify: restart monit
+  when: not base_ntpd_enable
+  tags: [ ntp ]
+...

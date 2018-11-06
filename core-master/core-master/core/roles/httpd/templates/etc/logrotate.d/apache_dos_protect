@@ -1,0 +1,21 @@
+/var/log/apache_dos_dump_append.log {
+    daily
+    maxage 31
+    size 3072k
+    rotate 5
+    compress
+    copytruncate
+    missingok
+    notifempty
+}
+
+/var/log/apache_dos_history.log {
+    monthly
+    maxage 31
+    size 3072k
+    rotate 4
+    nocompress
+    copytruncate
+    missingok
+    notifempty
+}

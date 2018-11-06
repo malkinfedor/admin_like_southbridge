@@ -1,0 +1,10 @@
+base_etc_hosts_local:
+  - { ipaddr: '172.20.0.2', host: 'vs01' }
+  - { ipaddr: '172.20.0.3', host: 'vs02' }
+  - { ipaddr: '172.20.0.4', host: 'vs03' }
+
+base_etc_hosts_common:
+  - { ipaddr: '172.20.100.50', fqdn: 'sbox.slurm.io' }
+  - { ipaddr: '172.20.100.51', fqdn: 'gitlab.slurm.io' }
+  - { ipaddr: '172.20.100.52', fqdn: 'runner.slurm.io' }
+

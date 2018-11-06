@@ -1,0 +1,30 @@
+before_script:
+  - source ~/.profile
+  - echo "Start test"
+
+stages:
+  - test
+  - create_task
+  
+test_create_remove_project_job:
+  stage: test
+  script:
+    - echo "Run some script"
+    - python zbx_add_new_proj/zbx_add_proj.py --prname "autotest.slurm.io"
+    - python zbx_create_web_check/zbx_create_web_check.py --url "https://zabbix.slurm.io" --pattern "zabbix" --prname "autotest.slurm.io" --desc "autotest"
+    - python zbx_create_domain_check/domain_check.py --prname "autotest.slurm.io" --domain "slurm.io"
+    - python zbx_create_sslvalid_check/zbx_create_sslvalid_check.py --prname "autotest.slurm.io" --domain "slurm.io"
+    - python zbx_add_maintenance/zbx_add_maintenance.py --host "content_check.autotest.slurm.io" --period "1H" --desc "autotest"
+    - python unit-test/unit_test.py
+  tags:
+    - zabbix
+  after_script:
+    -  python zbx_remove_project/zbx_remove_project.py --prname "autotest.slurm.io"
+    
+create_task:
+  stage: create_task
+  script:
+    - python unit-test/unit_test_create_task.py
+  when: on_failure
+  tags:
+    - zabbix

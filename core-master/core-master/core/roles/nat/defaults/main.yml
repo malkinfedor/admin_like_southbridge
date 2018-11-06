@@ -1,0 +1,5 @@
+---
+
+nat_network: "192.168.100.0/24"
+#nat_interface: ""
+#nat_ip_address: ""

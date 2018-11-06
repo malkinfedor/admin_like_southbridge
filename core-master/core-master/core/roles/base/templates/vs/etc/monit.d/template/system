@@ -1,0 +1,5 @@
+check system $HOST
+    if loadavg (5min) > {{ base_monit_la5 }} for 2 cycles then exec "/srv/southbridge/bin/highload-report.sh"
+    if loadavg (5min) > {{ base_monit_la5 }} for 4 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor $HOST && /bin/sleep 1800 && /usr/bin/monit monitor $HOST'"
+#    if loadavg (15min) > {{ base_monit_la15 }} for 2 cycles then exec "/srv/southbridge/bin/highload-report.sh"
+#    if loadavg (15min) > {{ base_monit_la15 }} for 4 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor $HOST && /bin/sleep 1800 && /usr/bin/monit monitor $HOST'"

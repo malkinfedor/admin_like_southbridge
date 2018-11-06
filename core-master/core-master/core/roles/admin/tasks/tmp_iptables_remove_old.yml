@@ -1,0 +1,60 @@
+---
+- name: "TMP: old iptables.ssh service stopped"
+  service:
+    name: "iptables.ssh"
+    state: stopped
+    enabled: no
+  register: admin_old_iptables_stop
+  failed_when: >
+    admin_old_iptables_stop is failed
+    and ('Could not find the requested service' not in admin_old_iptables_stop.msg
+    and ' found ' not in admin_old_iptables_stop.msg
+    and 'failed determining service state' not in admin_old_iptables_stop.msg )
+  tags: [ iptables, legacy ]
+
+- name: "TMP: old iptables.ssh service removed"
+  file:
+    state: absent
+    path: "/etc/init.d/iptables.ssh"
+  when: admin_old_iptables_stop.changed
+  tags: [ iptables, legacy ]
+
+- name: "TMP: restart new iptables SSH service"
+  service:
+    name: "{{ admin_iptables_service }}"
+    state: restarted
+  when:
+    - admin_old_iptables_stop.changed
+    - ansible_distribution_major_version|int <= 6
+  tags: [ iptables, legacy ]
+
+- name: "TMP: find old local iptables.ssh configuration file"
+  stat:
+    path: "/etc/ssh.iptables.local.cfg"
+  register: admin_old_ssh_local_file
+  tags: [ iptables, legacy ]
+
+- name: "TMP: read local configuration"
+  command: "cat /etc/ssh.iptables.local.cfg"
+  when: admin_old_ssh_local_file.stat.exists
+  register: admin_old_ssh_local_content
+  tags: [ iptables, legacy ]
+
+- name: "TMP: print out local configuration"
+  debug:
+    msg: "{{ admin_old_ssh_local_content.stdout }}"
+  when:
+    - admin_old_ssh_local_file.stat.exists
+    - admin_old_ssh_local_content.stdout != ""
+  tags: [ iptables, legacy ]
+
+- name: "TMP: remove iptables.ssh files"
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - "/etc/ssh.exclhost.cfg"
+    - "/etc/ssh.iptables.cfg"
+    - "/etc/ssh.iptables.local.cfg"
+  tags: [ iptables, legacy ]
+...

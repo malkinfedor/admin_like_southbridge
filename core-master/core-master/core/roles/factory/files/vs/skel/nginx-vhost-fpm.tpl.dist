@@ -1,0 +1,55 @@
+upstream ##FQDN## {
+    server unix:/var/run/php-fpm_##FQDN##.sock;
+}
+
+#server {
+#    listen 80;
+#    server_name www.##FQDN##;
+#    rewrite ^ http://##FQDN##$uri permanent;
+#
+#    access_log off;
+#    access_log ##WWW_PATH##/##FQDN##/logs/##FQDN##-acc main;
+#    error_log ##WWW_PATH##/##FQDN##/logs/##FQDN##-err;
+#}
+
+server {
+    listen 80;
+    server_name ##FQDN## www.##FQDN##;
+
+    access_log off;
+    #access_log ##WWW_PATH##/##FQDN##/logs/##FQDN##-acc main;
+    error_log ##WWW_PATH##/##FQDN##/logs/##FQDN##-err;
+
+    client_max_body_size 256m;
+
+    root ##WWW_PATH##/##FQDN##/htdocs;
+
+    set $fpmpool ##FQDN##;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_pass $fpmpool;
+        fastcgi_param HTTP_PROXY "";
+        include fastcgi_params;
+
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+        fastcgi_read_timeout 300;
+        fastcgi_buffer_size 16k;
+        fastcgi_buffers 32 16k;
+    }
+
+    location ~* \.(jpg|jpeg|gif|png|tif|tiff|bmp|svg|ico|js|css|zip|tgz|gz|tar|rar|bz2|rtf|doc|docx|xls|xlsx|ppt|pptx|exe|pdf|txt|mid|midi|swf|flv|avi|djvu|wav|mp3|ogg|mp4|mpg|mpeg|mov|wmv|wma|webm|ogv|ogg|3gp|otf|woff|woff2|eot)$ {
+        expires 7d;
+        access_log off;
+        log_not_found off;
+    }
+
+    include vhost.inc.conf;
+}

@@ -1,0 +1,7 @@
+---
+
+- name: tune2fs -c 0 -i 0
+  shell: "tune2fs -c 0 -i 0 {{ item.device }}"
+  with_items: "{{ ansible_mounts }}"
+  failed_when: false
+  tags: skip_ansible_lint

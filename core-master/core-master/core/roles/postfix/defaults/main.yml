@@ -1,0 +1,40 @@
+postfix_dkim_enabled: False
+postfix_aliases_local: ''
+postfix_root_email: ''
+postfix_relayhost: ''
+postfix_relayhost_port: 25
+postfix_send_user: ''
+postfix_send_password: ''
+postfix_mynetworks: ''
+postfix_inet_interfaces_all: False
+
+postfix_list_files:
+  - { src: 'etc/aliases',
+      dest: '/etc/aliases',
+      mode: '0644' }
+  - { src: 'etc/aliases_local',
+      dest: '/etc/aliases_local',
+      mode: '0644' }
+  - { src: 'etc/monit.d/postfix',
+      dest: '/etc/monit.d/postfix',
+      mode: '0644' }
+  - { src: 'etc/postfix/main.cf',
+      dest: '/etc/postfix/main.cf',
+      mode: '0644' }
+
+postfix_opendkim_list_files:
+  - { src: 'etc/monit.d/opendkim',
+      dest: '/etc/monit.d/opendkim',
+      mode: '0644' }
+  - { src: 'etc/opendkim.conf',
+      dest: '/etc/opendkim.conf',
+      mode: '0644' }
+  - { src: 'etc/postfix/mk_dkim_domain',
+      dest: '/etc/postfix/mk_dkim_domain',
+      mode: '0755' }
+  - { src: 'etc/postfix/resend_mail',
+      dest: '/etc/postfix/resend_mail',
+      mode: '0755' }
+  - { src: 'etc/cron.d/resend_mail',
+      dest: '/etc/cron.d/resend_mail',
+      mode: '0644' }

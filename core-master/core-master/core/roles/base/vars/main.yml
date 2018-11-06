@@ -1,0 +1,17 @@
+---
+base_hostsfile: "/etc/hosts"
+base_ntp_conf: "/etc/ntp.conf"
+base_ntp_cron: "/etc/cron.d/ntp"
+base_monit_ntpd: "/etc/monit.d/ntpd"
+base_network_scripts: "/etc/sysconfig/network-scripts"
+
+base_sb_etc: "/srv/southbridge/etc"
+base_sb_libexec: "/srv/southbridge/libexec"
+base_sb_check: "/srv/southbridge/check/hourly"
+
+base_iptables_service: "sb-iptables-base"
+base_iptables_script: "{{ base_iptables_service }}.sh"
+base_iptables_config: "{{ base_iptables_service }}.conf"
+base_iptables_chain: "SB.base"
+base_iptables_check_script: "_sb_iptables.base"
+...

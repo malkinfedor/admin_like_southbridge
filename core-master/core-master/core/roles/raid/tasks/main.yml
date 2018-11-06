@@ -1,0 +1,4 @@
+---
+
+- include: raid.yml
+  when: server_type == 'ds'

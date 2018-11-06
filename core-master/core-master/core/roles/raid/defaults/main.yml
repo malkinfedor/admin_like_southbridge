@@ -1,0 +1,7 @@
+---
+
+ignore_grub_install_error: False
+ignore_smartd_install_error: False
+
+# Ovveride dynamic config
+#smartd_conf: "DEVICESCAN -m root"

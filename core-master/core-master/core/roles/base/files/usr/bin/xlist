@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ -z $SUDO_USER ]; then 
+  SUDO_USER=$USER
+fi
+
+if [ -z $SUDO_USER ]; then 
+  echo "no USER defined"
+  exit
+fi
+
+
+ssh $SUDO_USER@vs09.southbridge.ru "/bin/ls -1 /home/$SUDO_USER/data/"

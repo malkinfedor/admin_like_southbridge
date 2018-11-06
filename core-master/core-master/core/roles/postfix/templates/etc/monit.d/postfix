@@ -1,0 +1,13 @@
+check process postfix with pidfile /var/spool/postfix/pid/master.pid
+    start program = "/srv/southbridge/bin/postfix.sh start"
+    stop program = "/srv/southbridge/bin/postfix.sh stop"
+    if failed host localhost port 25 type tcp protocol smtp with timeout 15 seconds
+	for 3 cycles
+	then restart
+    if 3 restarts within 6 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor postfix && /bin/sleep 1800 && /usr/bin/monit monitor postfix'"
+
+check file maillog with path /var/log/maillog
+    if match 'fatal:' then alert
+    if match 'bad command startup -- throttling' then alert
+    if match 'fatal:' for 3 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor postfix && /bin/sleep 1800 && /usr/bin/monit monitor postfix'"
+    if match 'bad command startup -- throttling' for 3 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor postfix && /bin/sleep 1800 && /usr/bin/monit monitor postfix'"

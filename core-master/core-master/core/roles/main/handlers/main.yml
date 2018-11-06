@@ -1,0 +1,288 @@
+---
+- name: restart ntpd
+  service:
+    name: ntpd
+    state: restarted
+  when: base_ntpd_enable
+
+- name: reload systemd
+  command: systemctl daemon-reload
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version == "7"
+
+- name: restart monit
+  service:
+    name: monit
+    state: restarted
+
+- name: restart filebeat
+  service:
+    name: filebeat
+    state: restarted
+
+- name: reload iptables.ssh
+  service:
+    name: iptables.ssh
+    state: reloaded
+
+- name: restart iptables.ssh
+  service:
+    name: iptables.ssh
+    state: restarted
+
+- name: restart iptables.mysql
+  service:
+    name: iptables.mysql
+    state: restarted
+
+- name: restart iptables.memcache
+  service:
+    name: iptables.memcache
+    state: restarted
+
+- name: restart sysctl
+  service:
+    name: sysctl
+    state: restarted
+
+- name: restart denyhosts
+  service:
+    name: denyhosts
+    state: restarted
+
+- name: restart journald
+  service:
+    name: systemd-journald
+    state: restarted
+  ignore_errors: yes
+
+- name: set-log-level systemd
+  command: /usr/bin/systemd-analyze set-log-level notice
+
+- name: restart rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+
+- name: reload sshd_ansible
+  service:
+    name: sshd_ansible
+    state: reloaded
+
+- name: restart sshd_ansible
+  service:
+    name: sshd_ansible
+    state: restarted
+
+- name: reload sshd
+  service:
+    name: sshd
+    state: reloaded
+  when:
+    - sshd_enable is defined
+    - sshd_enable == true
+
+- name: restart sshd
+  service:
+    name: sshd
+    state: restarted
+  when:
+    - sshd_enable is defined
+    - sshd_enable == true
+
+- name: reload crond
+  service:
+    name: crond
+    state: reloaded
+
+- name: reload postfix
+  service:
+    name: postfix
+    state: reloaded
+
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+
+- name: reload opendkim
+  service:
+    name: opendkim
+    state: reloaded
+
+- name: restart opendkim
+  service:
+    name: opendkim
+    state: restarted
+
+- name: reload zabbix-agent
+  service:
+    name: zabbix-agent
+    state: reloaded
+
+- name: restart zabbix-agent
+  service:
+    name: zabbix-agent
+    state: restarted
+
+- name: reload zabbix-proxy
+  service:
+    name: zabbix-proxy
+    state: reloaded
+
+- name: restart zabbix-proxy
+  service:
+    name: zabbix-proxy
+    state: restarted
+
+- name: reload httpd
+  service:
+    name: httpd
+    state: reloaded
+  when: "'httpd' in roles"
+
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted
+  when: "'httpd' in roles"
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+  when: "'nginx' in roles"
+
+- name: restart php-fpm
+  service:
+    name: php-fpm
+    state: restarted
+  when: "'php-fpm' in roles"
+
+- name: restart mysql
+  service:
+    name: mysql
+    state: restarted
+  when:
+    - mysql_config_check_result.rc == 0
+
+- name: reload mysql
+  service:
+    name: mysql
+    state: reloaded
+
+- name: restart mysqld
+  service:
+    name: mysqld
+    state: restarted
+  when:
+    - mysql_config_check_result.rc == 0
+
+- name: reload mysqld
+  service:
+    name: mysqld
+    state: reloaded
+
+- name: restart mariadb
+  service:
+    name: mariadb
+    state: restarted
+  when:
+    - mysql_config_check_result.rc == 0
+
+- name: reload mariadb
+  service:
+    name: mariadb
+    state: reloaded
+
+- name: restart zookeeper
+  service:
+    name: zookeeper
+    state: restarted
+
+- name: restart marathon
+  service:
+    name: marathon
+    state: restarted
+
+- name: restart chronos
+  service:
+    name: chronos
+    state: restarted
+
+- name: restart mesos-master
+  service:
+    name: mesos-master
+    state: restarted
+
+- name: restart mesos-slave
+  service:
+    name: mesos-slave
+    state: restarted
+
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
+  when:
+    - ds_init is not defined
+
+- name: restart openvpn
+  service:
+    name: openvpn
+    state: restarted
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version == "6"
+
+- name: restart openvpn_rhel7
+  systemd:
+    name: "openvpn@server.service"
+    state: restarted
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version == "7"
+
+#- name: save iptables
+#  command: iptables-save > /etc/sysconfig/iptables
+
+- name: restart lsyncd
+  service:
+    name: lsyncd
+    state: restarted
+
+- name: restart iptables.lsyncd
+  service:
+    name: iptables.lsyncd
+    state: restarted
+
+- name: restart postgresql
+  service:
+    name: "postgresql-{{postgresql_version_raw}}"
+    state: restarted
+  when:
+    - postgresql_version_raw is defined
+
+- name: reload postgresql
+  service:
+    name: "postgresql-{{postgresql_version_raw}}"
+    state: reloaded
+  when:
+    - postgresql_version_raw is defined
+
+- name: reload etcd
+  service:
+    name: etcd
+    state: reloaded
+
+- name: restart etcd
+  service:
+    name: etcd
+    state: restarted
+
+- name: restart memcached
+  service:
+    name: memcached
+    state: restarted
+...

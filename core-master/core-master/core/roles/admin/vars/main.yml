@@ -1,0 +1,17 @@
+---
+admin_sb_bin: "/srv/southbridge/bin"
+admin_sb_etc: "/srv/southbridge/etc"
+admin_sb_libexec: "/srv/southbridge/libexec"
+admin_sb_check: "/srv/southbridge/check/15min"
+
+admin_iptables_service: "sb-iptables-ssh"
+admin_iptables_script: "{{ admin_iptables_service }}.sh"
+admin_iptables_config: "{{ admin_iptables_service }}.conf"
+admin_iptables_chain: "SB.ssh"
+admin_iptables_check_script: "_sb_iptables.ssh"
+
+admin_iptables_core_list:
+  - "144.76.88.101"
+  - "188.166.122.96"
+  - "172.20.100.50"
+...

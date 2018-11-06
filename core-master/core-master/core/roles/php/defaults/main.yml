@@ -1,0 +1,38 @@
+##php_version: '71'  # Available: 53, 54, 55, 56, 70, 71, 72
+
+php_allow_exec: false
+php_apc: true
+php_timezone: "{{ timezone|default('Europe/Moscow') }}"
+
+php_packages_common:
+ - php
+ - php-bcmath
+ - php-cli
+ - php-common
+ - php-gd
+ - php-mbstring
+ - php-mcrypt
+ - php-mysqlnd
+ - php-pdo
+ - php-recode
+ - php-tidy
+ - php-xml
+ - php-xmlrpc
+
+php_packages_add: []
+
+php_packages:
+ '53':
+  - php-pecl-apc
+ '54':
+  - php-pecl-apc
+ '55':
+ - php-opcache
+ '56':
+ - php-opcache
+ '70':
+ - php-opcache
+ '71':
+ - php-opcache
+ '72':
+ - php-opcache

@@ -1,0 +1,4 @@
+---
+
+backup_remote_hosts: "vzbackups.slurm.io"
+backup_cron_time: "30 04 * * *"

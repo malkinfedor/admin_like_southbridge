@@ -1,0 +1,81 @@
+- name: install php-fpm
+  become: true
+  yum:
+    name: php-fpm
+    state: present
+
+- name: create subdirectories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - /etc/php-fpm.d
+    - /etc/monit.d
+    - /srv/southbridge/bin
+
+- name: copy configs
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/php-fpm.d/monit.conf',
+        dest: '/etc/php-fpm.d/monit.conf',
+        mode: '0644' }
+    - { src: 'etc/php-fpm.d/site.conf.tmpl',
+        dest: '/etc/php-fpm.d/site.conf.tmpl',
+        mode: '0644' }
+    - { src: 'srv/southbridge/bin/php-fpm.sh',
+        dest: '/srv/southbridge/bin/php-fpm.sh',
+        mode: '0755' }
+    - { src: 'srv/southbridge/www/test.php',
+        dest: '/srv/southbridge/www/test.php',
+        mode: '0644' }
+  notify: restart php-fpm
+
+- name: copy configs rhel7
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/systemd/system/php-fpm.service.d/override.conf',
+        dest: '/etc/systemd/system/php-fpm.service.d/override.conf',
+        mode: '0644' }
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 7
+  notify: restart php-fpm
+
+
+- name: copy configs for monit
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/monit.d/phpfpm-test',
+        dest: '/etc/monit.d/phpfpm-test',
+        mode: '0644' }
+  notify: restart monit
+
+- name: move www.conf to www.conf.disable
+  command: mv -f /etc/php-fpm.d/www.conf  /etc/php-fpm.d/www.conf.disable removes=/etc/php-fpm.d/www.conf
+
+- name: enable php-fpm service
+  become: true
+  service:
+    name: php-fpm
+    enabled: true

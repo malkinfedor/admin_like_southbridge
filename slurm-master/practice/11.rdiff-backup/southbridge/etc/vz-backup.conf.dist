@@ -1,0 +1,50 @@
+# You can use VEIDS="$(cd /vz/private/ && echo *)" to backup all your VE's.
+VEIDS="$([[ -d /vz/private/ ]]&& cd /vz/private/ && echo *)"
+
+# You can exclude some VEIDS from local and remote backup
+VEIDS_EXCLUDE=""
+
+# You can exclude some VEIDS only from local backup
+VEIDS_EXCLUDE_LOCAL=""
+
+# You can exclude some VEIDS only from remote backup
+VEIDS_EXCLUDE_REMOTE=""
+
+# the path to the running VE's
+VZ_PRIVATE="/vz/private"
+
+# the local rsync cache / destination directory
+# use LOCAL_DIR="" to disable local backup
+LOCAL_DIR="/vz/vzbackups"
+
+# Exclude files/directories 
+EXCLUDE=" **/tmp/** **/logs/** **/log/** **/proc/** **/cache/** **/managed_cache/** **/var/lib/php/session/** **/var/lib/slack/** **/var/cache/slack/** **/var/cache/yum/** **/httpd-logs/** **/var/lib/nginx/** **/var/spool/postfix/** **/var/lib/mysql/** **/var/lib/pgsql/** **/var/lib/mongo/** **/var/lib/docker/**  **/var/lib/yum/** "
+REMOTE_EXCLUDE=" "
+
+# Don't remove files older than X weeks
+REMOVE_LOCAL_AGE="6W"
+REMOVE_REMOTE_AGE="6W"
+
+# Deprecated. Do not use
+#REMOVE_AGE="6W"
+
+# Remote username
+USERNAME=`hostname | awk -F '.' '{print $2}'`
+
+# Remote host and path that this script will rsync the VE's to.
+# You can specify few hosts devided by space
+# for example: REMOTE_HOSTS="backup1.southbridge.ru backup2.southbridge.ru"
+# or REMOTE_HOSTS="" to disable remote backup
+REMOTE_HOSTS="vzbackups.southbridge.ru"
+
+# Remote backups directory
+REMOTE_DIR="vzbackups"
+
+# Checkpoint support
+CHKPNT_ENABLED="NO"
+
+# Command to run before backups (uncomment to use)
+#PREBACKUP="/etc/vz-backup-pre"
+
+# Command run after backups (uncomment to use)
+#POSTBACKUP="/etc/vz-backup-post"

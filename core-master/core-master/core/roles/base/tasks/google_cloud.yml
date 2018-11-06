@@ -1,0 +1,48 @@
+---
+- name: detec google cloud
+  stat:
+    path: /etc/dhcp/dhclient.d/google_hostname.sh
+  register: base_google_cloud_detect
+
+- name: disable change hostname
+  lineinfile:
+    path: /etc/dhcp/dhclient.d/google_hostname.sh
+    insertafter: "#!/bin/"
+    line: "exit"
+    state: present
+  when: base_google_cloud_detect.stat.exists
+
+- name: Mask service google-accounts-daemon rhel7
+  systemd:
+    name: "google-accounts-daemon"
+    masked: yes
+    state: stopped
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int >= 7
+  register: gce_disabled_systemd_result
+  failed_when: >
+    gce_disabled_systemd_result is failed
+    and ('Could not find the requested service' not in gce_disabled_systemd_result.msg
+    and ' found ' not in gce_disabled_systemd_result.msg
+    and 'failed determining service state' not in gce_disabled_systemd_result.msg )
+
+- name: Mask service google-accounts-daemon rhel6
+  service:
+    name: "google-accounts-daemon"
+    state: stopped
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version|int <= 6
+  register: gce_disabled_service_result
+  failed_when: >
+    gce_disabled_service_result is failed
+    and ('Could not find the requested service' not in gce_disabled_service_result.msg
+    and ' found ' not in gce_disabled_service_result.msg
+    and 'failed determining service state' not in gce_disabled_service_result.msg )
+
+- name: Delete file in /etc/sudoers.d/google_sudoers
+  file:
+    path: "/etc/sudoers.d/google_sudoers"
+    state: absent
+...

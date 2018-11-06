@@ -1,0 +1,13 @@
+yum install rdiff-backup
+
+rdiff-backup /srv/www /backup
+
+rdiff-backup -r 2018-10-05T19:45:38+03:00 /backup/srv/www/site.com /tmp/vz.restore/
+
+rdiff-backup -r 2D /backup/rpmbuild/RPMS /home/vz.restore/
+
+rdiff-backup --force --remove-folder-than 14D /backup
+
+rdiff-backup --list-increment-size /backup
+
+rdiff-backup --check-destination-dir /backup

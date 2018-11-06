@@ -1,0 +1,49 @@
+---
+- name: "TMP: old iptables.sb service stopped"
+  service:
+    name: "iptables.sb"
+    state: stopped
+    enabled: no
+  register: base_old_iptables_stop
+  failed_when: >
+    base_old_iptables_stop is failed
+    and ('Could not find the requested service' not in base_old_iptables_stop.msg
+    and ' found ' not in base_old_iptables_stop.msg
+    and 'failed determining service state' not in base_old_iptables_stop.msg )
+
+- name: "TMP: old iptables.sb service removed"
+  file:
+    state: absent
+    path: "/etc/init.d/iptables.sb"
+  when: base_old_iptables_stop.changed
+
+#- name: "TMP: restart iptables"
+#  service:
+#    name: iptables
+#    state: restarted
+#  when: base_old_iptables_stop.changed
+
+- name: "TMP: restart sb-iptables-base service"
+  service:
+    name: sb-iptables-base
+    state: restarted
+  when:
+    - base_old_iptables_stop.changed
+    - ansible_distribution_major_version|int <= 6
+
+#- name: "TMP: restart iptables.ssh"
+#  service:
+#    name: iptables.ssh
+#    state: restarted
+#  when: base_old_iptables_stop.changed
+
+- name: "TMP: remove iptables.sb files"
+  file:
+    state: absent
+    path: "{{ item }}"
+  with_items:
+    - "/etc/sb.exclhost.cfg"
+    - "/etc/sb.iptables.cfg"
+    - "/etc/sb.iptables.local.cfg"
+    - "/srv/southbridge/check/hourly/_sb_iptables.sb"
+...

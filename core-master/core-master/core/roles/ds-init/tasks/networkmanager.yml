@@ -1,0 +1,19 @@
+---
+- name: Disable NetworkManager
+  service:
+    name: NetworkManager
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Oldschool network service started
+  service:
+    name: network
+    state: started
+    enabled: yes
+
+- name: Remove NetwokManager
+  yum:
+    name: NetworkManager
+    state: absent
+...

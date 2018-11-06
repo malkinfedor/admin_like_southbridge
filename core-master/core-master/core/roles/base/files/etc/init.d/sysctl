@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# sysctl        southbridge sysctl config
+#
+# Author:       Igor Olemskoi <igor@southbridge.ru>
+#
+# chkconfig:    2345 99 99
+# description:  sysctl
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# See how we were called.
+case "$1" in
+  start|restart|reload)
+        echo "Starting sysctl"
+        if [ -d /etc/ktune.d ]; then
+	    for file in /etc/sysctl.conf /etc/ktune.d/*.conf; do
+		sysctl $quiet -p "$file"
+	    done
+    	fi
+        if [ -d /etc/sysctl.d ]; then
+	    for file in /etc/sysctl.conf /etc/sysctl.d/*.conf; do
+		sysctl $quiet -p "$file"
+	    done
+	fi
+        ;;
+  status)
+       echo "Loaded"
+       ;;
+  stop)
+       echo "Stoped"
+       ;;  
+  *)
+        echo "Usage: $0 {start}"
+esac
+
+exit 0

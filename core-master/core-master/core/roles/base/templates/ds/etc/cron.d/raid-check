@@ -1,0 +1,2 @@
+# Run system wide raid-check once a week on Sunday at 1am by default
+0 23 * * 6 root [ $(date +\%d) -le 07 ] && /usr/sbin/raid-check

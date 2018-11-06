@@ -1,0 +1,77 @@
+---
+- name: Abort if system is not RedHat family
+  fail:
+    msg: "System is not RedHat family distro"
+  when: ansible_os_family != "RedHat"
+
+- name: Abort if system is not RedHat family 6 or 7 distro
+  fail:
+    msg: "System is not RedHat family 6 or 7 distro"
+  when:
+    - ansible_distribution_major_version != "6"
+    - ansible_distribution_major_version != "7"
+
+- name: Init varables
+  include_role:
+    name: init-variables
+
+- import_tasks: named.yml
+
+- import_tasks: install_packages.yml
+
+- import_tasks: etckeeper.yml
+
+- import_tasks: copy_files.yml
+
+- include: copy_files_ds.yml
+  when: ( server_type == 'ds' )
+
+- include: copy_files_vds.yml
+  when: ( server_type == 'vds' )
+
+- include: copy_files_vs.yml
+  when: server_type == 'vs'
+
+- import_tasks: etc_hosts.yml
+
+- import_tasks: timezone.yml
+
+- import_tasks: ifcfg.yml
+
+- import_tasks: static_route.yml
+  when: base_static_route is defined
+  tags: [ ifcfg ]
+
+- import_tasks: yum_exclude.yml
+
+- import_tasks: services.yml
+
+- include: ntp.yml
+  when: ( server_type == 'ds' or server_type == 'vds' )
+
+- import_tasks: bashrc_alias.yml
+
+- import_tasks: logrotate.yml
+
+- import_tasks: google_cloud.yml
+
+- name: config sshd
+  include_role:
+    name: sshd
+
+- name: backup virtual containers
+  include_role:
+    name: backup
+  when:
+    - ansible_user is defined
+    - (server_type == 'vds' or virtualization_type == 'vz' or virtualization_type == 'vz7' or virtualization_type == 'docker')
+    - (ansible_user == "ansible" or ansible_user == "robot")
+
+- import_tasks: group_task.yml
+
+- import_tasks: delete_old_files.yml
+
+- import_tasks: iptables.yml
+
+- import_tasks: tmp_iptables_remove_old.yml
+...

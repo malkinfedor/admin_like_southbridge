@@ -1,0 +1,46 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+driftfile /var/lib/ntp/drift
+
+{% if ansible_distribution_major_version|int >= 7 %}
+tinker panic 0
+{% endif %}
+
+{% if ansible_distribution_major_version|int >= 7 %}
+restrict default nomodify notrap nopeer noquery
+{% else %}
+restrict default kod nomodify notrap nopeer noquery
+restrict -6 default kod nomodify notrap nopeer noquery
+{% endif %}
+
+restrict 127.0.0.1 
+{% if ansible_distribution_major_version|int >= 7 %}
+restrict ::1
+{% else %}
+restrict -6 ::1
+{% endif %}
+
+{% if base_ntp_custom_servers is defined %}
+{% for item in base_ntp_custom_servers %}
+server {{ item }} iburst
+{% endfor %}
+{% else %}
+server 0.{{ base_ntp_pool }} iburst
+server 1.{{ base_ntp_pool }} iburst
+server 2.{{ base_ntp_pool }} iburst
+server 3.{{ base_ntp_pool }} iburst
+{% endif %}
+
+includefile /etc/ntp/crypto/pw
+
+keys /etc/ntp/keys
+
+{% if ansible_distribution_major_version|int >= 7 %}
+# Disable the monitoring facility to prevent amplification attacks using ntpdc
+# monlist command when default restrict does not include the noquery flag. See
+# CVE-2013-5211 for more details.
+# Note: Monitoring will not be disabled with the limited restriction flag.
+disable monitor
+{% endif %}
+
+## EOF ##

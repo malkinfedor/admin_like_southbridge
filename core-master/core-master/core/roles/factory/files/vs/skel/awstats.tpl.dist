@@ -1,0 +1,6 @@
+Include "##AWSTATS_CONF_PATH##/default.conf"
+
+LogFile="##WWW_PATH##/##FQDN##/logs/##FQDN##-acc"
+SiteDomain="##FQDN##"
+DirData="##AWSTATS_DATA_PATH##/##FQDN##"
+HostAliases="www.##FQDN##"

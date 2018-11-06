@@ -1,0 +1,7 @@
+/var/log/monit {
+    missingok
+    notifempty
+    copytruncate
+    weekly
+    size 50M
+}

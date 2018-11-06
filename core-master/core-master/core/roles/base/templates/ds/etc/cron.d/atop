@@ -1,0 +1,2 @@
+0 */1 * * * root /usr/bin/atop -w /var/log/atop/`date +\%F-\%H`.raw 60 60
+@daily      root find /var/log/atop -name "*.raw" -ctime +14 -delete >/dev/null 2>&1

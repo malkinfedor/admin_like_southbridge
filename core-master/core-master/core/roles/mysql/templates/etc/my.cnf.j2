@@ -1,0 +1,82 @@
+# This file is managed by ansible and WILL BE RE-WRITTEN with mysql's restart on manual changes!
+
+[mysqld]
+user = mysql
+datadir = {{ mysql_datadir }}
+socket = /var/lib/mysql/mysql.sock
+symbolic-links = 0
+performance_schema=OFF
+#old_passwords = 1
+
+server-id = {{ mysql_server_id }}
+read-only = {{ mysql_read_only }}
+
+# MariaDB 10.1 - gtid mode always enabled
+# sic!!! maria gtid incompatible with mysql
+# gtid-mode = on
+
+binlog_format = MIXED
+{% if mysql_log_bin %}
+log-bin = {{ mysql_log_bin_name }}
+{% endif %}
+{% if mysql_log_basename is defined %}
+log-basename = {{ mysql_log_basename }}
+{% endif %}
+expire_logs_days = {{mysql_expire_logs_days}}
+max_binlog_size = {{mysql_max_binlog_size}}
+sync_binlog = 0
+
+long_query_time = {{mysql_long_query_time}}
+slow_query_log_file = /var/log/mysql-slow.log
+slow_query_log = {{mysql_slow_query_log}}
+
+skip-external-locking
+{% if mysql_skip_networking %}
+skip-networking
+{% endif %}
+skip-name-resolve
+
+key_buffer_size = {{ mysql_key_buffer_size }}
+
+max_allowed_packet = 1G
+table_open_cache = 2048
+table_definition_cache = 2048
+sort_buffer_size = 4M
+read_buffer_size = 4M
+read_rnd_buffer_size = 256K
+myisam_sort_buffer_size = 32M
+thread_cache_size = 32
+query_cache_size = 128M
+query_cache_limit = 2M
+query_cache_type = 1
+join_buffer_size = 2M
+#thread_concurrency = 128
+#thread_pool_size = 128
+optimizer_search_depth = 0
+max_connections = {{ mysql_max_connections }}
+
+# Ответы до 2 гиг размером сортируются в памяти
+tmp_table_size = {{ mysql_tmp_table_size }}
+max_heap_table_size = {{ mysql_max_heap_table_size }}
+#tmpdir=/tmpfs
+
+innodb_flush_log_at_trx_commit=2
+innodb_flush_method = O_DIRECT
+innodb_file_per_table=1
+
+innodb_buffer_pool_size={{ mysql_innodb_buffer_pool_size }}
+innodb_buffer_pool_instances={{ mysql_innodb_buffer_pool_instances }}
+
+innodb_log_buffer_size=512M
+innodb_log_file_size=512M
+innodb_force_recovery=0
+
+#AP
+innodb_doublewrite = 0
+innodb_support_xa = 0
+innodb_read_io_threads = 64
+innodb_write_io_threads = 64
+
+[mysqld_safe]
+log-error = /var/log/mysqld.log
+pid-file = /var/run/mysqld/mysqld.pid

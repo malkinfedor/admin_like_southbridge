@@ -1,0 +1,30 @@
+---
+- name: Role play only by root
+  fail: msg="This role run only one time. ansible_user should not be 'ansible'"
+  when: ansible_user == "ansible"
+
+- name: Fail if system is not RHEL 6/7
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: ansible_os_family != "RedHat" and (ansible_distribution_major_version != "6" or ansible_distribution_major_version != "7")
+
+- name: Fail if setup on BIOS software raid
+  fail: msg="#### System installed on BIOS software RAID. /dev/{{ item.key }} Please disable Software RAID in bios and resetup server. Or disable this check by set in host vars --- 'ds_init_bios_soft_raid_warning:False'"
+  when:
+    - ds_init_bios_soft_raid_warning
+    - item.key | search('md12')
+  with_dict: "{{ ansible_devices }}"
+
+- name: Abort if server type is not ds
+  fail: msg="server type is not ds or vds"
+  when: server_type != 'ds' and server_type != 'vds'
+
+- name: Check directory /srv/southbridge
+  stat:
+    path: /srv/southbridge
+  register: block_second_launch
+
+- include: sudoers.yml
+
+- include: main_task.yml
+  when: block_second_launch.stat.exists == False
+...

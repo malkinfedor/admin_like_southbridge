@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# iptables.mysql    This shell script enables access from southbridge monitor host and whitelist
+#
+# chkconfig:    - 50 12
+#
+# description:  Enable execution of southbridge whitelist access
+# processname   iptables.mysql
+# config:       /etc/iptables.mysql
+#
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+WHITELIST=/etc/mysql.iptables.cfg
+WHITELISTL=/etc/mysql.iptables.local.cfg
+EXCLHOST=/etc/mysql.exclhost.cfg
+HN=`hostname`
+IPTABLES=/sbin/iptables
+
+start() {
+$IPTABLES -N iptables.mysql
+reload
+
+}
+
+reload() {
+$IPTABLES -F iptables.mysql
+if [ -f $WHITELIST ]; then
+  $IPTABLES -A iptables.mysql -s 127.0.0.0/8 -j ACCEPT
+  for x in `grep -v ^# $WHITELIST | awk '{print $1}'`; do
+    $IPTABLES -A iptables.mysql -s $x -j ACCEPT
+  done
+  if [ -f $WHITELISTL ]; then
+    for x in `grep -v ^# $WHITELISTL | awk '{print $1}'`; do
+      $IPTABLES -A iptables.mysql -s $x -j ACCEPT
+    done
+  fi
+  if [ -f $EXCLHOST ]; then
+    grep -q $HN $EXCLHOST
+    if [ $? -eq 1 ]; then
+      $IPTABLES -A iptables.mysql -m tcp -p tcp --dport 3306 -j REJECT --reject-with icmp-host-prohibited
+    fi
+  else
+    $IPTABLES -A iptables.mysql -m tcp -p tcp --dport 3306 -j REJECT --reject-with icmp-host-prohibited
+  fi
+  $IPTABLES -D INPUT -m tcp -p tcp --dport 3306 -j iptables.mysql > /dev/null 2>&1
+  $IPTABLES -I INPUT -m tcp -p tcp --dport 3306 -j iptables.mysql
+fi
+}
+
+
+stop() {
+  $IPTABLES -D INPUT -m tcp -p tcp --dport 3306 -j iptables.mysql > /dev/null 2>&1
+  $IPTABLES -F iptables.mysql
+  $IPTABLES -X iptables.mysql
+}
+
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|force-reload)
+        stop
+    	start
+        ;;
+  reload)
+	reload
+        ;;
+  status)
+	exit 0
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|force-reload}"
+        exit 1
+esac
+
+exit 0

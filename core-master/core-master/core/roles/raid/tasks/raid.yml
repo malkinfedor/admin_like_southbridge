@@ -1,0 +1,25 @@
+---
+
+- name: Abort if system is not RedHat family
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: ( ansible_os_family != "RedHat" )
+
+- name: Abort if system is not RedHat family 6 or 7 distro
+  fail: msg="System is not RedHat family 6 or 7 distro"
+  when: (( ansible_distribution_major_version != "6" ) and ( ansible_distribution_major_version != "7" ))
+
+- name: Detect RAID
+  include: detect.yml
+
+- debug: var=raid_type
+
+- name: Set raid monitoring
+  include: monitoring.yml
+  when: raid_type != "md" and raid_type != "none"
+
+- name: Set smartd config
+  include: smartd.yml
+
+- name: Install GRUB
+  include: grub.yml
+  when: raid_type == "md"

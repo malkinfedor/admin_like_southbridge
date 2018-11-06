@@ -1,0 +1,36 @@
+---
+- name: copy ds backup script
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'srv/southbridge/bin/ds-backup.sh',
+        dest: '/srv/southbridge/bin/ds-backup.sh',
+        mode: '0755' }
+    - { src: 'srv/southbridge/etc/ds-backup.conf.dist',
+        dest: '/srv/southbridge/etc/ds-backup.conf.dist',
+        mode: '0644' }
+    - { src: 'srv/southbridge/etc/ds-backup.conf',
+        dest: '/srv/southbridge/etc/ds-backup.conf',
+        mode: '0644' }
+  register: backup_copy_script_result
+
+- name: set cron task for backup
+  cron:
+    name: vzbackups
+    user: root
+    job: "sleep $(($RANDOM \\% 10800)) && /srv/southbridge/bin/ds-backup.sh >> /var/log/vz-backup.log 2>&1"
+    cron_file: vzbackups
+    minute: "{{ backup_cron_time.split(' ')[0] }}"
+    hour: "{{ backup_cron_time.split(' ')[1] }}"
+    day: "{{ backup_cron_time.split(' ')[2] }}"
+    month: "{{ backup_cron_time.split(' ')[3] }}"
+    weekday: "{{ backup_cron_time.split(' ')[4] }}"
+    state: present
+  notify: reload crond
+
+...

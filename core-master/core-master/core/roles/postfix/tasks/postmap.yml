@@ -1,0 +1,21 @@
+---
+
+- name: "fstat source {{ postfix_db_file }}"
+  stat:
+    path: "{{ postfix_db_file }}"
+  register: postfix_db_file_stat
+
+- name: "fstat source {{ postfix_db_file }}.db"
+  stat:
+    path: "{{ postfix_db_file }}.db"
+  register: postfix_db_file_db_stat
+
+- name: "make {{ postfix_db_file }}.db"
+  command: "postmap {{ postfix_db_file }}"
+  when: not postfix_db_file_db_stat.stat.exists
+
+- name: "update {{ postfix_db_file }}.db"
+  command: "postmap {{ postfix_db_file }}"
+  when:
+    - postfix_db_file_db_stat.stat.exists
+    - postfix_db_file_stat.stat.mtime > postfix_db_file_db_stat.stat.mtime

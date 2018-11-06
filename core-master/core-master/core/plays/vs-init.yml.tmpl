@@ -1,0 +1,7 @@
+- hosts:
+  - ##inventory_hostname##
+  vars:
+    ansible_port: 22
+    ansible_host: "{{ ( hostvars[ds_host]['ansible_host'] is defined ) | ternary(hostvars[ds_host]['ansible_host'],ds_host) }}"
+  roles:
+    - vs-init

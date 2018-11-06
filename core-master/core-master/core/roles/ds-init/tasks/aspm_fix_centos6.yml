@@ -1,0 +1,11 @@
+---
+
+- block:
+  - name: set perfomance to policy
+    command: echo "performance" > /sys/module/pcie_aspm/parameters/policy
+
+  - name:  /sbin/grubby --args=pcie_aspm=off --update-kernel=ALL
+    command: /sbin/grubby --args=pcie_aspm=off --update-kernel=ALL
+  when:
+    - ansible_distribution_major_version == "6"
+    - server_type == 'ds'

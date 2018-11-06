@@ -1,0 +1,32 @@
+---
+- name: Check required dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ admin_sb_check }}"
+    - "{{ admin_sb_libexec }}"
+    - "{{ admin_sb_etc }}"
+  tags: [ iptables ]
+
+- name: Iptables whitelist
+  template:
+    src: "iptables/{{ admin_iptables_config }}.j2"
+    dest: "{{ admin_sb_etc }}/{{ admin_iptables_config }}"
+    mode: 0644
+  register: admin_whitelist
+  tags: [ iptables ]
+
+- include: "iptables-sysvinit.yml"
+  when: ansible_distribution_major_version|int <= 6
+
+- include: "iptables-systemd.yml"
+  when: ansible_distribution_major_version|int >= 7
+
+- name: Iptables service check script
+  template:
+    src: "iptables/{{ admin_iptables_check_script }}.j2"
+    dest: "{{ admin_sb_check }}/{{ admin_iptables_check_script }}"
+    mode: 0755
+  tags: [ iptables ]
+...

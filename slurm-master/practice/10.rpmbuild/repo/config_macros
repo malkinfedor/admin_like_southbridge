@@ -1,0 +1,4 @@
+cat <<EOT > ~/.rpmmacros
+%_signature gpg
+%_gpg_name redslurm
+EOT

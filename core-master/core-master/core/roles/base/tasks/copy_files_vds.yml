@@ -1,0 +1,116 @@
+---
+- name: create southbridge directories
+  file:
+    name: "{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - /srv/southbridge/bin
+    - /srv/southbridge/etc
+    - /srv/southbridge/check
+    - /srv/southbridge/scripts
+    - /var/lib/flags
+    - /etc/ktune.d
+    - /etc/monit.d/template
+
+- name: Copy monit config
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'ds/etc/monit.d/messages',
+        dest: '/etc/monit.d/messages',
+        mode: '0444' }
+  notify: restart monit
+
+- name: "Template monit config (if no docker)"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'vs/etc/monit.d/template/system',
+        dest: '/etc/monit.d/template/system',
+        mode: '0444' }
+  when:
+    - virtualization_type != 'docker'
+  notify: restart monit
+
+- name: "Copy ktune & sysctl configs for vds"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'ds/etc/ktune.d/ktune.conf',
+        dest: '/etc/ktune.d/ktune.conf',
+        mode: '0444' }
+    - { src: 'etc/ktune.d/ipv6.conf',
+        dest: '/etc/ktune.d/ipv6.conf',
+        mode: '0444' }
+    - { src: 'etc/ktune.d/conntrack-rhel6.conf',
+        dest: '/etc/ktune.d/conntrack-rhel6.conf',
+        mode: '0444' }
+    - { src: 'etc/ktune.d/tuning.conf',
+        dest: '/etc/ktune.d/tuning.conf',
+        mode: '0444' }
+    - { src: 'ds/etc/sysctl.ktune',
+        dest: '/etc/sysctl.ktune',
+        mode: '0444' }
+    - { src: 'ds/etc/rc.d/rc.local',
+        dest: '/etc/rc.d/rc.local',
+        mode: '0755' }
+    - { src: 'vs/etc/sysconfig/named',
+        dest: '/etc/sysconfig/named',
+        mode: '0444' }
+  when: server_type == 'vds'
+  notify: restart sysctl
+
+- name: "Template sysctl configs for vds"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'vds/etc/sysctl.conf.j2',
+        dest: '/etc/sysctl.conf',
+        mode: '0444' }
+    - { src: 'ds/etc/security/limits.d/90-nproc.conf',
+        dest: '/etc/security/limits.d/90-nproc.conf',
+        mode: '0444' }
+  when: server_type == 'vds'
+  notify: restart sysctl
+  tags: [ sysctl ]
+
+- name: Manage atop directory
+  file:
+    path: "/var/log/atop"
+    state: "{{ base_atop_enable|ternary('directory','absent') }}"
+  tags: [atop]
+
+- name: Copy atop cronjob
+  template:
+    src: "ds/etc/cron.d/atop"
+    dest: "/etc/cron.d/atop"
+    owner: root
+    group: root
+    mode: 0444
+  when: base_atop_enable
+  tags: [atop]
+
+- name: Remove atop cronjob
+  file:
+    path: "/etc/cron.d/atop"
+    state: absent
+  when: not base_atop_enable
+  tags: [atop]
+...

@@ -1,0 +1,80 @@
+---
+- name: Copy console override file
+  copy:
+    src: "{{ item }}"
+    dest: "{{ kvm_templates_path }}/{{ item }}"
+  with_items:
+    - "autologin.conf"
+  loop_control:
+    label: "{{ item }}"
+
+- name: Create temporary file (I)
+  tempfile:
+    state: file
+  register: kvm_sysprep_tmp_1
+
+- name: Create temporary file (II)
+  tempfile:
+    state: file
+    suffix: ".sh"
+  register: kvm_sysprep_tmp_2
+
+- name: Sysprep customize operations batch file
+  template:
+    src: "sysprep_batch.j2"
+    dest: "{{ kvm_sysprep_tmp_1.path }}"
+
+- name: Sysprep customize operations script
+  template:
+    src: "sysprep_script.j2"
+    dest: "{{ kvm_sysprep_tmp_2.path }}"
+
+- name: Running sysprep on VM templates
+  command: >
+    virt-sysprep --quiet --operation customize,defaults,-lvm-uuids
+    --commands-from-file {{ kvm_sysprep_tmp_1.path }}
+    -a {{ item.dest | regex_replace('\.bz2', '') }}
+  when:
+    - item.changed
+    - item.dest is defined
+  with_items: "{{ kvm_get_templates.results }}"
+  loop_control:
+    label: "{{ item.dest|d('null') }}"
+
+- name: Create temp dir for ifcfg files
+  file:
+    path: "{{ kvm_templates_path }}/{{ item.name }}"
+    state: directory
+  when:
+    - item.name not in kvm_existing_vms.list_vms
+    - item.state|d('running') != 'undefined'
+  with_items:
+    - "{{ kvm_vm }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Touch placeholder in temp dir
+  file:
+    path: "{{ kvm_templates_path }}/{{ item.name }}/placeholder.bak"
+    state: touch
+  when:
+    - item.name not in kvm_existing_vms.list_vms
+    - item.state|d('running') != 'undefined'
+  with_items:
+    - "{{ kvm_vm }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Create ifcfg files from template
+  template:
+    src: "ifcfg.j2"
+    dest: "{{ kvm_templates_path }}/{{ item.0.name }}/ifcfg-{{ item.1.dev }}"
+  when:
+    - item.0.name not in kvm_existing_vms.list_vms
+    - item.0.state|d('running') != 'undefined'
+  with_subelements:
+    - "{{ kvm_vm }}"
+    - sysprep_ifcfg
+    - flags:
+      skip_missing: true
+...

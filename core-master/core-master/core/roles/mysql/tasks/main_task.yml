@@ -1,0 +1,126 @@
+---
+- name: check installed verison of mysql
+  shell: cat /var/lib/flags/_mysql_version
+  register: mysql_check_installed_version
+  changed_when: false
+
+- name: fail if mysql version mismatch
+  fail: msg="Mysql version from ansible inventory != version on server ( {{ mysql_version }} != {{ mysql_check_installed_version.stdout }} )"
+  when:
+    - mysql_check_installed_version.stdout != ''
+    - mysql_version != mysql_check_installed_version.stdout
+
+- name: install repo
+  yum:
+    name: "southbridge-{{ mysql_repo[mysql_version] }}-release"
+    enablerepo: southbridge-stable
+    state: present
+  when:
+    - mysql_version != 'mysql55'
+
+- name: install mysql
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ mysql_packages[mysql_version] }}"
+
+- name: install percona-xtrabackup-24
+  yum:
+    name: percona-xtrabackup-24
+    state: present
+
+- name: Template my.cnf
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/my.cnf.j2',
+        dest: '/etc/my.cnf',
+        mode: '0644' }
+  notify: "restart {{ mysql_service_name['rhel'+ansible_distribution_major_version][mysql_version] }}"
+
+- name: Template mysql logrotate config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/logrotate.d/mysql-slow',
+        dest: '/etc/logrotate.d/mysql-slow',
+        mode: '0644' }
+    - { src: 'etc/logrotate.d/mysql',
+        dest: '/etc/logrotate.d/mysql',
+        mode: '0644' }
+
+- name: init database
+  command: "{{ mysql_install_db[mysql_version] }} --datadir={{ mysql_datadir | quote }} --user=mysql"
+  args:
+    creates: "{{ mysql_datadir | quote }}/mysql/db.frm"
+
+- name: "Touch my.cnf in data dir (CVE-2016-6662)"
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: touch
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'mysql/my.cnf',
+        dest: '{{ mysql_datadir | quote }}/my.cnf',
+        mode: '0400' }
+  changed_when: false
+
+- name: start and enable service
+  service:
+    name: "{{ mysql_service_name['rhel'+ansible_distribution_major_version][mysql_version] }}"
+    state: started
+    enabled: yes
+
+- name: check root password
+  stat:
+    path: /root/.mysql
+  register: mysql_root_password_flag
+
+- block:
+  - name: generate root password
+    shell: cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 10
+    register: mysql_root_password
+  - name: set root password
+    shell: "echo {{ mysql_root_password.stdout }} > /root/.mysql"
+  - name: mysql secure installation
+    script: "./scripts/mysql_secure {{ mysql_root_password.stdout }}"
+    when: not mysql_skip_secure_script
+  - name: mysql fix permissions /var/lib/mysql
+    shell: chmod o+x /var/lib/mysql >/dev/null 2>&1
+  when: mysql_root_password_flag.stat.exists == False
+  no_log: False
+
+- import_tasks: mysql_iptables.yml
+
+- name: Command check config mysql
+  command: /srv/southbridge/check/mysql_config_check
+  register: mysql_config_check_result
+  changed_when: false
+  failed_when: mysql_config_check_result.rc > 2
+
+- name: Template cron backup
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/cron.d/backups',
+        dest: '/etc/cron.d/backups',
+        mode: '0644' }
+  notify:
+    - reload crond
+...

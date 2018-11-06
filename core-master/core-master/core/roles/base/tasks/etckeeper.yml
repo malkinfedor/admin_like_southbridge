@@ -1,0 +1,29 @@
+---
+- name: "shell: Check git user.name value"
+  shell: "/usr/bin/git config --get user.name || :"
+  register: base_etckeeper_git_config_name
+  changed_when: false
+
+- name: "shell: check git user.email value"
+  shell: "/usr/bin/git config --get user.email || :"
+  register: base_etckeeper_git_config_email
+  changed_when: false
+
+- name: "command: Initialize global git config before etckeeper init"
+  command: "/usr/bin/git config --global user.name root"
+  when:
+    - base_etckeeper_git_config_name is defined
+    - base_etckeeper_git_config_name.stdout_lines|length == 0
+
+- name: "command: Initialize global git config before etckeeper init"
+  command: "/usr/bin/git config --global user.email root"
+  when:
+    - base_etckeeper_git_config_email is defined
+    - base_etckeeper_git_config_email.stdout_lines|length == 0
+
+# etckeeper MAY initialize hg/bzr/... repo, not git:
+- name: "command: Initialize etckeeper repo in /etc"
+  command: "etckeeper init"
+  args:
+    creates: /etc/.etckeeper
+    chdir: /etc

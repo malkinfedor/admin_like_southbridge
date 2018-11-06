@@ -1,0 +1,33 @@
+---
+
+- name: add nf_conntrack in modules rhel6
+  template:
+    src: etc/sysconfig/modules/nf_conntrack.module
+    dest: /etc/sysconfig/modules/nf_conntrack.module
+    owner: root
+    group: root
+    mode: '0755'
+  when: ansible_distribution_major_version == "6"
+
+- name: add nf_conntrack in modules rhel7
+  template:
+    src: etc/modules-load.d/nf_conntrack.conf
+    dest: /etc/modules-load.d/nf_conntrack.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: ansible_distribution_major_version == "7"
+
+- name: modprobe nf_conntrack
+  command: modprobe nf_conntrack
+  tags: skip_ansible_lint
+
+- name: install tuned
+  service:
+    name: tuned
+    state: started
+    enabled: yes
+
+- name: tuned-adm profile throughput-performance
+  command: tuned-adm profile throughput-performance
+  tags: skip_ansible_lint

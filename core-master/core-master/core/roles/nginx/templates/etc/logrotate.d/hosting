@@ -1,0 +1,32 @@
+/srv/www/*/logs/*-acc {
+    daily
+    maxage 31
+    size 3072k
+    rotate 7
+    compress
+    copytruncate
+    missingok
+    notifempty
+}
+
+/srv/www/*/logs/*-err {
+    weekly
+    maxage 31
+    size 3072k
+    rotate 2
+    nocompress
+    copytruncate
+    missingok
+    notifempty
+}
+
+/srv/www/*/logs/*-slow {
+    weekly
+    maxage 31
+    size 3072k
+    rotate 2
+    nocompress
+    copytruncate
+    missingok
+    notifempty
+}

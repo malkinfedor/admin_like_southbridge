@@ -1,0 +1,7 @@
+{% if (postfix_dkim_enabled == True) %}
+check process opendkim with pidfile /var/run/opendkim/opendkim.pid
+    start program = "/sbin/service opendkim start" with timeout 30 seconds
+    stop program = "/sbin/service opendkim stop" with timeout 30 seconds
+    if failed host localhost port 8891 type tcp then restart
+    if 5 restarts within 5 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor opendkim && /bin/sleep 3600 && /usr/bin/monit monitor opendkim'"
+{% endif %}

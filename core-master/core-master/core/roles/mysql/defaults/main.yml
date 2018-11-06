@@ -1,0 +1,93 @@
+---
+## mysql_version: mariadb101 # Available: mysql55, mysql56, mysql57, mariadb101, mariadb102, percona56, percona57
+mysql_iptables_clientlist: []
+mysql_iptables_enable: False
+mysql_iptables_mysql_enable: True
+mysql_skip_secure_script: False
+
+mysql_datadir: /var/lib/mysql
+
+mysql_max_connections: 300
+mysql_skip_networking: True
+mysql_log_bin: True
+mysql_log_bin_name: bin
+mysql_expire_logs_days: 4
+mysql_max_binlog_size: '1G'
+
+mysql_slow_query_log: ON
+mysql_long_query_time: 1
+
+# if use MyISAM set key_buffer_size=4G
+mysql_key_buffer_size: '16M'
+
+# Memory for InnoDB Engine
+mysql_innodb_buffer_pool_size: '2G'
+mysql_innodb_buffer_pool_instances: 2
+
+# Ответы до 2 гиг размером сортируются в памяти
+mysql_tmp_table_size: '2G'
+mysql_max_heap_table_size: '2G'
+
+# replication
+mysql_server_id: 1
+mysql_read_only: 0
+
+mysql_repo:
+ mysql56: mysql56
+ mysql57: mysql57
+ percona56: percona
+ percona57: percona
+ mariadb101: mariadb101
+ mariadb102: mariadb102
+
+mysql_install_db:
+ mysql56: mysql_install_db
+ mysql57: "mysqld --initialize-insecure"
+ percona56: mysql_install_db
+ percona57: "mysqld --initialize-insecure"
+ mariadb101: mysql_install_db
+ mariadb102: mysql_install_db
+
+mysql_packages:
+ mysql55:
+   - mysql
+   - mysql-server
+ mysql56:
+   - mysql-community-server
+   - mysql-community-client
+ mysql57:
+   - mysql-community-server
+   - mysql-community-client
+ percona56:
+   - Percona-Server-server-56
+   - Percona-Server-client-56
+ percona57:
+   - Percona-Server-server-57
+   - Percona-Server-client-57
+ mariadb101:
+    - MariaDB-shared
+    - MariaDB-server
+    - MariaDB-client
+ mariadb102:
+    - MariaDB-shared
+    - MariaDB-server
+    - MariaDB-client
+
+mysql_service_name:
+ rhel6:
+  mysql55: mysqld
+  mysql56: mysqld
+  mysql57: mysqld
+  percona56: mysql
+  percona57: mysql
+  mariadb101: mysql
+  mariadb102: mysql
+ rhel7:
+  mysql55: mysqld
+  mysql56: mysqld
+  mysql57: mysqld
+  percona56: mysql
+  percona57: mysql
+  mariadb101: mariadb
+  mariadb102: mariadb
+...

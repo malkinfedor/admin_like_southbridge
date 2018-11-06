@@ -1,0 +1,96 @@
+# Username to access the MySQL server e.g. dbuser
+USERNAME=root
+
+# Username to access the MySQL server e.g. password
+if [ -f "/root/.mysql" ]; then
+    PASSWORD=`cat /root/.mysql`
+else
+    exit 0
+fi
+
+# Host name (or IP address) of MySQL server e.g localhost
+DBHOST=localhost
+
+# List of DBNAMES for Daily/Weekly Backup e.g. "DB1 DB2 DB3"
+DBNAMES="all"
+
+# Backup directory location e.g /backups
+BACKUPDIR="/var/backups/mysql"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="root"
+
+# ============================================================
+# === ADVANCED OPTIONS ( Read the doc's below for details )===
+#=============================================================
+
+# Nice running level
+NICE=20
+
+# List of DBBNAMES for Monthly Backups.
+MDBNAMES="mysql $DBNAMES"
+
+# List of DBNAMES to EXLUCDE if DBNAMES are set to all (must be in " quotes)
+DBEXCLUDE="information_schema performance_schema "
+
+# List of tables to exclude from the backup (in form db.table)
+TABLEEXCLUDE=""
+
+# Include CREATE DATABASE in backup?
+CREATE_DATABASE=no
+
+# Separate backup directory and file for each DB? (yes or no)
+SEPDIR=yes
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY=0
+
+# How many days keep backup
+BACKUP_DAYS=3
+
+# Choose Compression type. (gzip or bzip2)
+COMP=gzip
+
+# Compress communications between backup server and MySQL server?
+COMMCOMP=no
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST=no
+
+#  The maximum size of the buffer for client/server communication. e.g. 16MB (maximum is 1GB)
+MAX_ALLOWED_PACKET=1GB
+
+#  For connections to localhost. Sometimes the Unix socket file must be specified.
+OS=`uname`
+if [ "$OS" = "FreeBSD" ]; then
+    SOCKET=/tmp/mysql.sock
+else
+    SOCKET=/var/lib/mysql/mysql.sock
+fi
+
+# Command to run before backups (uncomment to use)
+#PREBACKUP="/etc/mysql-backup-pre"
+
+# Command run after backups (uncomment to use)
+#POSTBACKUP="/etc/mysql-backup-post"
+
+# (если не описано, по-умолчанию так и делать)
+DO_SQL_DUMP=yes
+# separate table to file ?
+SEPTABLE=no 
+
+# (если не описано, по-умолчанию не делать)
+DO_HOT_BACKUP=no
+HOT_XTRA_BACKUP=no
+DO_MYDUMPER_BACKUP=no

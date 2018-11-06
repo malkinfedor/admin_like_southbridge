@@ -1,0 +1,47 @@
+###################################
+# sshd config from southbridge.io #
+###################################
+
+AddressFamily inet
+Protocol 2
+UseDNS no
+
+LoginGraceTime 60s
+PermitRootLogin {{sshd_permit_root_login}}
+MaxAuthTries 5
+{% if 'kvm' in roles %}
+MaxSessions 500
+MaxStartups 500:30:1000
+{% endif %}
+
+{% if ansible_distribution_major_version == '7' %}
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+{% endif %}
+
+SyslogFacility AUTHPRIV
+
+AuthorizedKeysFile      .ssh/authorized_keys
+
+PasswordAuthentication yes
+ChallengeResponseAuthentication {{ 'yes' if sshd_2fa_enable == True else 'no' }}
+
+GSSAPIAuthentication no
+GSSAPICleanupCredentials no
+
+UsePAM yes
+
+X11Forwarding yes
+UsePrivilegeSeparation {{ 'sandbox' if ansible_distribution_major_version == '7' else 'yes' }}
+
+
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+
+ClientAliveInterval 60
+ClientAliveCountMax 10
+
+Subsystem       sftp    /usr/libexec/openssh/sftp-server

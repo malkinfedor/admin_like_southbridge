@@ -1,0 +1,240 @@
+---
+- name: Compare hostname with inventory
+  fail: "msg='--- INCONSISTENT HOSTNAME: {{ansible_nodename}} != {{inventory_hostname}} ---'"
+  when:
+    - ansible_nodename != inventory_hostname
+    - ((ds_init is not defined) or (ds_init is defined and ds_init != true ))
+
+- name: set ansible_ssh_user
+  set_fact:
+    ansible_ssh_user: "{{ ansible_ssh_user }}"
+  when: ansible_ssh_user is defined
+
+- name: set ansible_ssh_port
+  set_fact:
+    ansible_ssh_port: "{{ ansible_ssh_port }}"
+  when: ansible_ssh_port is defined
+
+- name: set ansible_ssh_common_args
+  set_fact:
+    ansible_ssh_common_args: "{{ ansible_ssh_common_args }}"
+  when: ansible_ssh_common_args is defined
+
+- name: set server type ds
+  set_fact:
+    server_type: ds
+  when:
+    - server_type is undefined
+    - inventory_hostname | match("^(ds|ovz)")
+
+- name: set server type vds
+  set_fact:
+    server_type: vds
+  when:
+    - server_type is undefined
+    - inventory_hostname | match("^vs")
+    - "'admin' in roles"
+
+- name: set server type vs
+  set_fact:
+    server_type: vs
+  when:
+    - server_type is undefined
+    - inventory_hostname | match("^vs")
+
+
+- name: set virtualization type vz
+  set_fact:
+    virtualization_type: vz
+  when:
+    - virtualization_type is undefined
+    - server_type == 'ds'
+    - "'vz' in roles"
+
+- name: set virtualization type vz7
+  set_fact:
+    virtualization_type: vz7
+  when:
+    - virtualization_type is undefined
+    - server_type == 'ds'
+    - "'vz7' in roles"
+
+- name: set virtualization type docker
+  set_fact:
+    virtualization_type: docker
+  when:
+    - virtualization_type is undefined
+    - "('docker' in roles or 'kubernetes' in roles)"
+
+- name: set virtualization type kvm
+  set_fact:
+    virtualization_type: kvm
+  when:
+    - virtualization_type is undefined
+    - server_type == 'ds'
+    - "'kvm' in roles"
+
+- name: set virtualization type guest
+  set_fact:
+    virtualization_type: none
+  when:
+    - virtualization_type is undefined
+    - server_type == 'vds' or server_type == 'ds'
+
+- name: set virtualization type guest
+  set_fact:
+    virtualization_type: guest
+  when:
+    - virtualization_type is undefined
+    - server_type == 'vs'
+
+- name: set mdraid presence
+  set_fact:
+    mdraid_is_present: >-
+      {{ ansible_device_links.ids | d('') | string | regex_search('md[0-9]') |
+      string | regex_replace('[Nn]one','') | length > 0 }}
+  when:
+    - server_type == 'ds'
+
+- name: set mdraid presence to false
+  set_fact:
+    mdraid_is_present: false
+  when:
+    - mdraid_is_present is undefined
+
+- debug:
+    msg: "mdraid_is_present: {{ mdraid_is_present }}"
+
+- name: set LVM presence
+  set_fact:
+    lvm_is_present: "{{ ansible_lvm is defined and ansible_lvm.vgs|length > 0 }}"
+
+- debug:
+    msg: "lvm_is_present: {{ lvm_is_present }}"
+
+- name: set sshd_enable for ds
+  set_fact:
+    sshd_enable: true
+  when:
+    - sshd_enable is undefined
+    - server_type == 'ds'
+
+- name: set sshd_enable for vds
+  set_fact:
+    sshd_enable: true
+  when:
+    - sshd_enable is undefined
+    - server_type == 'vds'
+
+- name: set sshd_enable for vs
+  set_fact:
+    sshd_enable: false
+  when:
+    - sshd_enable is undefined
+    - server_type == 'vs'
+
+- debug: var=server_type
+- debug: var=sshd_enable
+- debug: var=virtualization_type
+
+- name: mkdir /var/lib/flags
+  file:
+    dest: /var/lib/flags
+    state: directory
+    mode: '0755'
+
+- name: save var to file server_type
+  lineinfile:
+    path: /var/lib/flags/_server_fact
+    create: yes
+    regexp: 'server_type='
+    line: "server_type={{ server_type }}"
+    state: present
+
+- name: save var to file virtualization
+  lineinfile:
+    path: /var/lib/flags/_server_fact
+    create: yes
+    regexp: 'virtualization_type='
+    line: "virtualization_type={{ virtualization_type }}"
+    state: present
+
+- name: set default mysql version
+  set_fact:
+    mysql_version: 'mariadb101'
+  when:
+    - mysql_version is not defined
+    - "'mysql' in roles"
+
+- name: save var to file mysql
+  shell: "echo {{ mysql_version | quote }} > /var/lib/flags/_mysql_version"
+  args:
+    creates: /var/lib/flags/_mysql_version
+  when:
+    - mysql_version is defined
+    - "'mysql' in roles"
+
+#- name: set default postgresql version
+#  set_fact:
+#    postgresql_version: 9.6
+#  when:
+#    - postgresql_version is not defined
+#    - "'postgresql' in roles"
+
+- name: save var to file postgresql
+  shell: "echo {{ postgresql_version_raw | quote }} > /var/lib/flags/_postgresql_version"
+  args:
+    creates: /var/lib/flags/_postgresql_version
+  when:
+    - postgresql_version_raw is defined
+    - "'postgresql' in roles"
+
+- name: set default php version
+  set_fact:
+    php_version: '71'
+  when:
+    - php_version is not defined
+    - "('php' in roles) or ('php-fpm' in roles)"
+
+- name: save var to file php
+  shell: "echo {{ php_version | quote }} > /var/lib/flags/_php_version"
+  args:
+    creates: /var/lib/flags/_php_version
+  when:
+    - php_version is defined
+
+- name: set variables for rhel6
+  block:
+    - set_fact:
+        rsyslog_stop_log = "& ~"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version == "6"
+
+- name: set variables for rhel7
+  block:
+    - set_fact:
+        rsyslog_stop_log = "& stop"
+  when:
+    - ansible_os_family == "RedHat"
+    - ansible_distribution_major_version == "7"
+
+- name: save roles.json
+  copy:
+    content: "{{ roles | to_json }}"
+    dest: /var/lib/flags/_roles.json
+
+- name: declare empty list for yum excludes
+  set_fact:
+    yum_exclude_from_roles: []
+
+- name: "set yum exclude for vz(7), docker and kernel4"
+  set_fact:
+    yum_exclude_from_roles: "{{ yum_exclude_from_roles }} + [ 'kernel' ]"
+  when: >
+    'vz' in roles or
+    'vz7' in roles or
+    'docker' in roles or
+    'kernel4' in roles
+
+...

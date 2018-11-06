@@ -1,0 +1,9 @@
+check process phpfpm_test with pidfile /var/run/php-fpm/php-fpm.pid
+    start program = "/srv/southbridge/bin/php-fpm.sh start"
+    stop program = "/srv/southbridge/bin/php-fpm.sh stop"
+    if failed host localhost port 80 protocol http
+        and request "/phpfpm-test/test.php"
+        with timeout 15 seconds
+        for 3 cycles
+        then restart
+    if 3 restarts within 6 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor phpfpm_test && /bin/sleep 3600 && /usr/bin/monit monitor phpfpm_test'"

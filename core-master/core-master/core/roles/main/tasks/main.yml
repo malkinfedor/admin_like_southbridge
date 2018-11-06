@@ -1,0 +1,9 @@
+- fail:
+    msg: "Deprecated role"
+
+#- name: include role
+#  include: '{{inner_item}}.yml'
+#  with_items: "{{ roles }}"
+#  loop_control:
+#    loop_var: inner_item
+#  static: no

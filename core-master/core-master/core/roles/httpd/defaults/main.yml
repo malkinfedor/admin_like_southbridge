@@ -1,0 +1,14 @@
+httpd_dos_protect: false  # whether dos_protect logrotate and cron expr should be uploaded 
+
+httpd_Timeout: 15
+httpd_StartServers: 5
+httpd_MinSpareServers: 5
+httpd_MaxSpareServers: 15
+httpd_ServerLimit: 100
+httpd_MaxRequestWorkers: 100
+httpd_MaxClients: "{{ httpd_MaxRequestWorkers }}"
+httpd_MaxConnectionsPerChild: 4000
+httpd_MaxRequestsPerChild: "{{ httpd_MaxConnectionsPerChild }}"
+
+httpd_user: "apache"
+httpd_group: "apache"

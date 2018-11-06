@@ -1,0 +1,39 @@
+---
+- name: "SSH iptables service script"
+  template:
+    src: "iptables/{{ admin_iptables_script }}.j2"
+    dest: "{{ admin_sb_libexec }}/{{ admin_iptables_script }}"
+    mode: 0744
+  register: admin_iptables_script_result
+  tags: [ iptables ]
+
+- name: "SSH iptables service unit"
+  template:
+    src: "iptables/{{ admin_iptables_service }}.service.j2"
+    dest: "/etc/systemd/system/{{ admin_iptables_service }}.service"
+    mode: 0644
+  register: admin_iptables_unit_result
+  tags: [ iptables ]
+
+- name: "SSH iptables service manage"
+  systemd:
+    name: "{{ admin_iptables_service }}"
+    state: "{{ admin_iptables_enable|ternary('started','stopped') }}"
+    enabled: "{{ admin_iptables_enable|ternary('yes','no') }}"
+  tags: [ iptables ]
+
+- name: "SSH iptables service reloaded (systemd)"
+  systemd:
+    name: "{{ admin_iptables_service }}"
+    state: reloaded
+  when: admin_whitelist.changed
+  tags: [ iptables ]
+
+- name: "SSH iptables service restarted (systemd)"
+  systemd:
+    name: "{{ admin_iptables_service }}"
+    state: restarted
+    daemon_reload: yes
+  when: admin_iptables_unit_result.changed or admin_iptables_script_result.changed
+  tags: [ iptables ]
+...

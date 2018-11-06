@@ -1,0 +1,65 @@
+- name: install southbridge-php repository
+  become: true
+  yum:
+    name: southbridge-php{{ item }}-release
+    enablerepo: southbridge-stable
+    state: present
+  with_items:
+    - "{{ php_version }}"
+
+- name: install php
+  become: true
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ php_packages_common }}"
+    - "{{ php_packages[php_version] }}"
+    - "{{ php_packages_add }}"
+  notify:
+    - restart httpd
+    - restart php-fpm
+
+- name: copy configs
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/httpd/conf.d/php.conf',
+        dest: '/etc/httpd/conf.d/php.conf',
+        mode: '0644' }
+    - { src: 'etc/httpd/conf.d/php{{php_version}}.ini',
+        dest: '/etc/httpd/conf.d/php.ini',
+        mode: '0644' }
+    - { src: 'etc/php.d/timezone.ini',
+        dest: '/etc/php.d/timezone.ini',
+        mode: '0644' }
+    - { src: 'etc/php.d/short_tag.ini',
+        dest: '/etc/php.d/short_tag.ini',
+        mode: '0644' }
+  notify:
+    - restart httpd
+    - restart php-fpm
+
+- name: copy APC config
+  become: true
+  template:
+    src: 'etc/php.d/apc.ini'
+    dest: '/etc/php.d/apc.ini'
+    owner: root
+    group: root
+    mode: 0644
+  when:
+   - php_apc
+   - php_version|int < 55
+  notify:
+    - restart httpd
+    - restart php-fpm
+
+- name: include phpmyadmin
+  include_role:
+    name: phpmyadmin

@@ -1,0 +1,25 @@
+---
+
+- name: "fstat source {{ postfix_alias_file }}"
+  become: true
+  stat:
+    path: "{{ postfix_alias_file }}"
+  register: postfix_alias_file_stat
+
+- name: "fstat source {{ postfix_alias_file }}.db"
+  become: true
+  stat:
+    path: "{{ postfix_alias_file }}.db"
+  register: postfix_alias_file_db_stat
+
+- name: "make {{ postfix_alias_file }}.db"
+  become: true
+  command: "postalias {{ postfix_alias_file }}"
+  when: not postfix_alias_file_db_stat.stat.exists
+
+- name: "update {{ postfix_alias_file }}.db"
+  become: true
+  command: "postalias {{ postfix_alias_file }}"
+  when:
+    - postfix_alias_file_db_stat.stat.exists
+    - postfix_alias_file_stat.stat.mtime > postfix_alias_file_db_stat.stat.mtime

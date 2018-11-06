@@ -1,0 +1,27 @@
+/var/log/mysql-slow.log {
+    weekly
+    rotate 4
+    nocompress
+    create 660 mysql mysql
+    dateext
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+      /usr/bin/mysqladmin -uroot -p`cat /root/.mysql` flush-logs  > /dev/null 2>&1
+    endscript
+}
+
+/var/log/mysql-slow-queries.log {
+    weekly
+    rotate 4
+    nocompress
+    create 660 mysql mysql
+    dateext
+    missingok
+    notifempty
+    sharedscripts
+    postrotate
+      /usr/bin/mysqladmin -uroot -p`cat /root/.mysql` flush-logs  > /dev/null 2>&1
+    endscript
+}

@@ -1,0 +1,23 @@
+---
+debian_additional_software: []
+redhat_additional_software: []
+
+debian_base_software:
+  - vim
+  - git
+  - curl
+  - wget
+  - telnet
+  - htop
+  - tmux
+  - bash-completion
+
+redhat_base_software:
+  - vim
+  - git
+  - curl
+  - wget
+  - telnet
+  - htop
+  - tmux
+  - bash-completion

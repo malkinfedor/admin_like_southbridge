@@ -1,0 +1,41 @@
+---
+- name: Template iptables.mysql
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/mysql.iptables.cfg',
+        dest: '/etc/mysql.iptables.cfg',
+        mode: '0644' }
+    - { src: 'etc/mysql.exclhost.cfg',
+        dest: '/etc/mysql.exclhost.cfg',
+        mode: '0644' }
+    - { src: 'etc/init.d/iptables.mysql',
+        dest: '/etc/init.d/iptables.mysql',
+        mode: '0755' }
+  notify:
+    - reload systemd
+    - restart iptables.mysql
+  when: mysql_iptables_enable
+
+#- name: enable service iptables.mysql  (fix)
+#  command: "chkconfig --add iptables.mysql"
+#  when: ansible_distribution_major_version == "7"
+#  changed_when: false
+
+#- name: systemctl daemon-reload
+#  become: true
+#  command: systemctl daemon-reload
+#  when: ansible_distribution_major_version == "7"
+#  changed_when: false
+
+- name: add services iptables.mysql
+  service:
+    name: iptables.mysql
+    state: started
+    enabled: yes
+  when: mysql_iptables_enable
+...

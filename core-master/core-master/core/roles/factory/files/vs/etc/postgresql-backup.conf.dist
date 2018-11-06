@@ -1,0 +1,81 @@
+if [ ! -f "/root/.postgresql" ]; then
+    exit 0
+fi
+
+# Username to access the PostgreSQL server e.g. dbuser
+OS=`uname`
+if [ "$OS" = "FreeBSD" ]; then
+    POSTGRESQL_USERNAME="pgsql"
+else
+    POSTGRESQL_USERNAME="postgres"
+fi
+
+# Nice running level
+NICE=20
+
+# List of DBNAMES for Daily/Weekly Backup e.g. "DB1 DB2 DB3"
+DBNAMES="all"
+
+# Backup directory location e.g /backups
+BACKUPDIR="/var/backups/postgresql"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="root"
+
+# List of DBBNAMES for Monthly Backups.
+MDBNAMES="postgres $DBNAMES"
+
+# List of DBNAMES to EXLUCDE if DBNAMES are set to all (must be in " quotes)
+DBEXCLUDE=""
+
+# List of tables to exclude from the backup (in form db.table)
+TABLEEXCLUDE=""
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY=6
+
+# How many days keep backup
+BACKUP_DAYS=7
+
+# Number of monthly backups
+BACKUP_MONTHLY=3
+
+# Choose Compression type. (gzip or bzip2)
+COMP=bzip2
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST=no
+
+# Optional pg_dump settings
+OPT="--encoding=utf-8 --clean"
+
+# Port
+if [ -f "/etc/init.d/pgbouncer" ]; then
+    PORT="5454"
+else
+    PORT="5432"
+fi
+
+# (если не описано, по-умолчанию так и делать)
+DO_SQL_DUMP=no
+# (если не описано, по-умолчанию не делать)
+DO_HOT_BACKUP=no
+# custom format backup
+DO_CUSTOM_DUMP=yes
+
+# do backup with pgdump_all
+DO_DBALL_DUMP=no
+
+# Prefix name for dball backup files
+DBALLNAME="_dball"

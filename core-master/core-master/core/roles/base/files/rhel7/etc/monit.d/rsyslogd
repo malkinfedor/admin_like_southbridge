@@ -1,0 +1,4 @@
+check process rsyslogd with pidfile /var/run/syslogd.pid
+    start program = "/bin/systemctl start rsyslog"
+    stop program = "/bin/systemctl stop  rsyslog"
+    if 3 restarts within 6 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor rsyslogd && /bin/sleep 3600 && /usr/bin/monit monitor rsyslogd'"

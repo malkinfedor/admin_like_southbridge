@@ -1,0 +1,28 @@
+---
+- name: check presence of fastestmirror.conf
+  stat: path="/etc/yum/pluginconf.d/fastestmirror.conf"
+  register: fastestmirror
+
+# fastestmirror plugin actually slows down Ansible deployments
+- name: disable fastestmirror plugin
+  lineinfile:
+    dest: /etc/yum/pluginconf.d/fastestmirror.conf
+    regexp: "^enabled=.*"
+    line: "enabled=0"
+    state: present
+  when: fastestmirror.stat.exists
+
+- name: install packages requirements for bootstrap
+  yum: name={{ item }} state=present
+  with_items: ["libselinux-python", "epel-release"]
+
+- name: disable selinux
+  selinux: state=disabled
+
+- name: install base software
+  yum: name="{{ item }}" state=present update_cache=yes
+  with_items: "{{ redhat_base_software }}"
+
+- name: install additional software
+  yum: name="{{ item }}" state=present update_cache=yes
+  with_items: "{{ redhat_additional_software }}"

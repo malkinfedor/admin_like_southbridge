@@ -1,0 +1,20 @@
+#
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+#
+[Unit]
+Description=Custom firewall chain for SSH service
+After=syslog.target iptables.service
+PartOf=iptables.service
+AssertPathExists={{ admin_sb_etc }}/{{ admin_iptables_config }}
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart={{ admin_sb_libexec }}/{{ admin_iptables_script }} start
+ExecReload={{ admin_sb_libexec }}/{{ admin_iptables_script }} reload
+ExecStop={{ admin_sb_libexec }}/{{ admin_iptables_script }} stop
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=basic.target

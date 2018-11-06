@@ -1,0 +1,9 @@
+---
+
+- name: create sudoers.d file for current user
+  template:
+    src: etc/sudoers.d/ds-init-remove-this
+    dest: /etc/sudoers.d/ds-init-remove-this
+    mode: '0440'
+  when:
+    - ansible_user != "ansible"

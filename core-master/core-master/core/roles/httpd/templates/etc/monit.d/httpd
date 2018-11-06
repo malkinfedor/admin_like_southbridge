@@ -1,0 +1,9 @@
+check process apache with pidfile /var/run/httpd/httpd.pid
+    start program = "/srv/southbridge/bin/highload-report.sh apache-start"
+    stop program = "/srv/southbridge/bin/highload-report.sh apache-stop" with timeout 120 seconds
+    if failed host localhost port 8080
+        protocol http request "/stats/test.php"
+        with timeout 15 seconds
+        for 3 cycles
+        then restart
+    if 15 restarts within 30 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor apache && /bin/sleep 3600 && /usr/bin/monit monitor apache'"

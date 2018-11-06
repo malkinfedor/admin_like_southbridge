@@ -1,0 +1,4 @@
+---
+
+- name: fix intel nic e1000
+  script: ./scripts/e1000e_fix.sh

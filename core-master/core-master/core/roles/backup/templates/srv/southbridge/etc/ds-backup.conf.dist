@@ -1,0 +1,39 @@
+
+RDIFFBACKUP_LOCAL_ARGS=" --exclude-sockets --exclude-fifos --exclude-device-files "
+
+# Exclude files/directories 
+EXCLUDE="/sys /proc /dev **/tmp/** **/logs/** **/log/** **/proc/** **/cache/** **/managed_cache/** **/var/lib/php/session/** **/var/lib/slack/** **/var/cache/slack/** **/var/cache/yum/** **/httpd-logs/** **/var/lib/nginx/** **/var/spool/postfix/** **/var/lib/mysql/** **/var/lib/pgsql/** **/var/lib/docker/** "
+REMOTE_EXCLUDE=" "
+
+# Exclude mount points, mounted by nfs
+EXCLUDE_MOUNTS=" nfs "
+
+# Don't remove files older than X weeks
+REMOVE_AGE="6W"
+
+# Remote username
+USERNAME=`hostname | awk -F '.' '{print $2}'`
+
+# Remote host and path that this script will rsync the VE's to.
+# You can specify few hosts devided by space
+# for example: REMOTE_HOSTS="vzbackups.slurm.io vzbackups2.slurm.io"
+# or REMOTE_HOSTS="" to disable remote backup
+REMOTE_HOSTS="vzbackups.slurm.io"
+
+# Remote backups directory
+REMOTE_DIR="vzbackups"
+
+# Remote DIR for backups
+REMOTEHOSTDIR=`hostname | awk -F '.' '{print $1}'`
+
+# Checkpoint support
+CHKPNT_ENABLED="NO"
+
+# enable RAID0="YES" if need disable check RAID-0
+RAID0="NO"
+
+# Command to run before backups (uncomment to use)
+#PREBACKUP="/etc/vz-backup-pre"
+
+# Command run after backups (uncomment to use)
+#POSTBACKUP="/etc/vz-backup-post"

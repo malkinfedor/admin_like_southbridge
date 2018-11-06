@@ -1,0 +1,1 @@
+00 * * * * root /srv/southbridge/bin/aacraid-check.sh

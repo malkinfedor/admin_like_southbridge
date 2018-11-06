@@ -1,0 +1,63 @@
+# Path to couchbase bin directory where cbbackup is located
+PATHTOCOUCHBASEBIN="/opt/couchbase/bin"
+
+# Host name (or IP address) of couchbase server e.g localhost or IP like 127.0.0.1
+HOST='127.0.0.1'
+
+# Port that couchbase is listening on
+PORT='8091'
+
+# Username to access the couchbase server e.g. dbuser
+USERNAME='Administrator'
+
+# Backup root directory
+BACKUPDIR='/var/backups/couchbase'
+
+# Password to access the couchbase server e.g. password
+if [ -f "/root/.couchbase" ]; then
+    PASSWORD=`cat /root/.couchbase`
+else
+    exit 0
+fi
+
+# Keep num daily files
+KEEPDAILY=3
+
+# Keep num monthly files
+KEEPMONTHLY=3
+
+# Which day do you want weekly backups? (1 to 7 where 1 is Monday)
+DOWEEKLY=6
+
+# Choose Compression type. (gzip or bzip2)
+COMP="gzip"
+
+# Choose if the uncompressed folder should be deleted after compression has completed
+CLEANUP="yes"
+
+# Additionally keep a copy of the most recent backup in a seperate directory.
+LATEST="no"
+
+# Make Hardlink not a copy
+LATESTLINK="no"
+
+# Mail setup
+# What would you like to be mailed to you?
+# - log   : send only log file
+# - files : send log file and sql files as attachments (see docs)
+# - stdout : will simply output the log to the screen if run manually.
+# - quiet : Only send logs if an error occurs to the MAILADDR.
+MAILCONTENT="quiet"
+
+# Set the maximum allowed email size in k. (4000 = approx 5MB email [see docs])
+MAXATTSIZE="4000"
+
+# Email Address to send mail to? (user@domain.com)
+MAILADDR="root"
+
+# Command to run before backups (uncomment to use)
+# PREBACKUP=""
+
+# Command run after backups (uncomment to use)
+# delete old logs
+# POSTBACKUP=""

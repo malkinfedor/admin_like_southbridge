@@ -1,0 +1,8 @@
+---
+
+- name: Remove alias from root .bashrc
+  lineinfile:
+    path: /etc/logrotate.conf
+    regexp: '^\s*#*\s*compress'
+    line: "compress"
+    state: present

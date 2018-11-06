@@ -1,0 +1,34 @@
+<VirtualHost *>
+    DocumentRoot ##WWW_PATH##/##FQDN##/htdocs
+    ServerName ##FQDN##
+    ServerAlias www.##FQDN##
+    ErrorLog ##WWW_PATH##/##FQDN##/logs/##FQDN##-err
+    # CustomLog ##WWW_PATH##/##FQDN##/logs/##FQDN##-acc combined
+    <IfModule mod_setenvif.c>
+        SetEnvIf X-Forwarded-Proto https HTTPS=on
+    </IfModule>
+
+    <Location />
+	php_admin_value open_basedir "##WWW_PATH##/##FQDN##:/usr/share/php"
+	php_admin_value upload_tmp_dir "##WWW_PATH##/##FQDN##/tmp"
+	php_admin_value session.save_path "##WWW_PATH##/##FQDN##/tmp"
+	php_admin_value upload_max_filesize "256M"
+	php_admin_value post_max_size "256M"
+	php_admin_value memory_limit "256M"
+	php_admin_value short_open_tag "On"
+	php_admin_value date.timezone "Europe/Moscow"
+    </Location>
+
+    <Location /awstats/>
+	AuthType Basic
+	AuthName "Site Statistics"
+	AuthUserFile ##WWW_PATH##/##FQDN##/conf/awstats
+	Require valid-user
+    </Location>
+
+    <Directory ##WWW_PATH##/##FQDN##/htdocs>
+	Options Includes FollowSymLinks
+	AllowOverride All
+	Require all granted
+    </Directory>
+</VirtualHost>

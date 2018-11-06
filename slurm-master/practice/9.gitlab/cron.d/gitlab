@@ -1,0 +1,9 @@
+0 1 * * * root /usr/bin/gitlab-rake gitlab:backup:create >/dev/null 2>&1
+0 1 * * * root sh -c '(umask 0077; tar -czf /var/opt/gitlab/backups/$(date "+etc-gitlab-\%s_\%Y_\%m_\%d.tgz") -C / etc/gitlab) >/dev/null 2>&1'
+0 0 * * * root find /var/opt/gitlab/backups/ -type f -mmin +10080 -delete >/dev/null 2>&1
+0 4 * * * root /usr/bin/gitlab-ctl registry-garbage-collect >/dev/null 2>&1
+0 16 * * * root [ $(find /var/opt/gitlab/backups/ -type f -name "*_gitlab_backup.tar" -mtime -1 | wc -l) -eq 0 ] && ((echo "No today gitlab data backup ('*_gitlab_backup.tar')"; echo; ls -lsa /var/opt/gitlab/backups; echo)| mail -s "gitlab_backup_alert" root)
+0 16 * * * root [ $(find /var/opt/gitlab/backups/ -type f -name "etc-gitlab*" -mtime -1 | wc -l) -eq 0 ] && ((echo "No today gitlab config backup ('etc-gitlab*')"; echo; ls -lsa /var/opt/gitlab/backups; echo)| mail -s "gitlab_etc_backup_alert" root)
+
+0 7 * * 1 root yum -y install gitlab-ce 2>&1 | tr -d '\015' | tr -d '\033' | mail -s "gitlab_update" root
+

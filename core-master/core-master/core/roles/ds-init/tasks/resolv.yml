@@ -1,0 +1,12 @@
+- name: copy /etc/resolv.conf
+  become: true
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  with_items:
+    - { src: 'etc/resolv.conf',
+        dest: '/etc/resolv.conf',
+        mode: '0644' }

@@ -1,0 +1,5 @@
+check process pure-ftpd with pidfile /var/run/pure-ftpd.pid
+    start program = "/sbin/service pure-ftpd start" with timeout 30 seconds
+    stop program = "/sbin/service pure-ftpd stop" with timeout 30 seconds
+    if failed host 127.0.0.1 port 21 type tcp then restart
+    if 5 restarts within 5 cycles then exec "/bin/bash -c '/usr/bin/monit unmonitor pure-ftpd && /bin/sleep 3600 && /usr/bin/monit monitor pure-ftpd'"

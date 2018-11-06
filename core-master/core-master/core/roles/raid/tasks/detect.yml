@@ -1,0 +1,13 @@
+---
+
+- block:
+  - yum: name=pciutils state=present
+  - name: start detect raid script
+    become: true
+    script: ./scripts/detect_raid.sh
+    register: raid_detect_raid_output
+  - debug: msg="{{ raid_detect_raid_output.stdout.split('\n') }}"
+  - name: Detect RAID type
+    set_fact: raid_type={{ raid_detect_raid_output.stdout_lines[0] }}
+  - debug: var=raid_type
+  when: raid_type is undefined

@@ -1,0 +1,15 @@
+# THIS FILE IS MANAGED BY ANSIBLE, ALL CHANGES WILL BE LOST
+
+{% for line in admin_iptables_core_list %}
+{{ line|ipv4 }}
+{% endfor %}
+{% if admin_iptables_extra_list is defined %}
+{% for line in admin_iptables_extra_list %}
+{{ line|ipv4|ternary(line,'# '~line) }}
+{% endfor %}
+{% endif %}
+{% if admin_ssh_iptables_add_hosts is defined %}
+{% for line in admin_ssh_iptables_add_hosts %}
+{{ line|ipv4 }}
+{% endfor %}
+{% endif %}
